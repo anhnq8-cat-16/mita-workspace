@@ -40,3 +40,7 @@ skip_nonce_check = false
 [edge_runtime]
 enabled = true
 policy = "per_worker"
+
+# pg_cron gọi qua pg_net với header x-cron-secret (không có JWT người dùng)
+[functions.notify]
+verify_jwt = false

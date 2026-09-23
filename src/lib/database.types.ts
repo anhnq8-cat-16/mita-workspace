@@ -9,6 +9,11 @@ export type Role = 'admin' | 'manager' | 'lead' | 'staff'
 export type TeamId = 'sales_domestic' | 'marketing' | 'export'
 export type LeaveType = 'nghi_phep' | 'cong_tac' | 'om' | 'khac'
 export type AuditAction = 'insert' | 'update' | 'delete'
+export type TaskStatus = 'todo' | 'doing' | 'review' | 'done' | 'blocked'
+export type TaskPriority = 'low' | 'normal' | 'high' | 'urgent'
+export type PlanItemKind = 'task' | 'visit' | 'meeting' | 'content' | 'other'
+export type ReportStatus = 'on_time' | 'late' | 'missed'
+export type ReportResult = 'done' | 'partial' | 'not_done'
 
 type Table<Row, Required extends keyof Row = never> = {
   Row: Row
@@ -27,6 +32,7 @@ export type ProfileRow = {
   is_active: boolean
   activated_at: string | null
   title: string | null
+  notification_prefs: Json
   created_at: string
   updated_at: string
 }
@@ -81,8 +87,110 @@ export type LeaveRow = {
   note: string | null
   approved_by: string | null
   approved_at: string | null
+  rejected_by: string | null
+  rejected_at: string | null
+  reject_reason: string | null
   created_at: string
   updated_at: string
+}
+
+export type ExtraWorkdayRow = {
+  date: string
+  name: string
+  team_ids: string[]
+  created_at: string
+  updated_at: string
+}
+
+export type TaskRow = {
+  id: string
+  title: string
+  description: string | null
+  team_id: string | null
+  assignee_id: string | null
+  created_by: string | null
+  weekly_goal_id: string | null
+  status: TaskStatus
+  priority: TaskPriority
+  start_date: string | null
+  due_date: string | null
+  estimate_minutes: number | null
+  position: number
+  is_sensitive: boolean
+  is_off_plan: boolean
+  carried_over_count: number
+  completed_at: string | null
+  approved_by: string | null
+  blocked_reason: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type DailyPlanRow = {
+  id: string
+  user_id: string
+  plan_date: string
+  submitted_at: string
+  is_late: boolean
+  route_plan: string | null
+  note: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  review_comment: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type DailyPlanItemRow = {
+  id: string
+  plan_id: string
+  task_id: string | null
+  title: string
+  kind: PlanItemKind
+  estimate_minutes: number | null
+  is_carried_over: boolean
+  carried_from_item_id: string | null
+  removed_reason: string | null
+  is_off_plan: boolean
+  position: number
+  created_at: string
+  updated_at: string
+}
+
+export type DailyReportRow = {
+  id: string
+  user_id: string
+  report_date: string
+  submitted_at: string | null
+  status: ReportStatus
+  metrics: Json
+  blockers: string | null
+  need_decision: string | null
+  tomorrow_note: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  review_comment: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type DailyReportItemRow = {
+  id: string
+  report_id: string
+  plan_item_id: string | null
+  task_id: string | null
+  result: ReportResult
+  reason: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ReportAmendmentRow = {
+  id: string
+  report_id: string
+  author_id: string
+  body: string
+  created_at: string
 }
 
 export type NotificationRow = {
@@ -107,6 +215,30 @@ export type AuditLogRow = {
   at: string
 }
 
+export type TeamDayRow = {
+  user_id: string
+  full_name: string | null
+  email: string
+  avatar_url: string | null
+  role: Role
+  teams: string[]
+  plan_required: boolean
+  leave_id: string | null
+  leave_type: LeaveType | null
+  leave_approved: boolean | null
+  plan_id: string | null
+  plan_submitted_at: string | null
+  plan_is_late: boolean | null
+  plan_reviewed_at: string | null
+  plan_item_count: number | null
+  report_id: string | null
+  report_status: ReportStatus | null
+  report_submitted_at: string | null
+  report_reviewed_at: string | null
+  need_decision: string | null
+  blockers: string | null
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -119,16 +251,68 @@ export interface Database {
       leaves: Table<LeaveRow, 'user_id' | 'date'>
       notifications: Table<NotificationRow, 'user_id' | 'type' | 'title'>
       audit_log: Table<AuditLogRow, 'table_name' | 'action'>
+      extra_workdays: Table<ExtraWorkdayRow, 'date' | 'name'>
+      tasks: Table<TaskRow, 'title'>
+      daily_plans: Table<DailyPlanRow, 'user_id' | 'plan_date'>
+      daily_plan_items: Table<DailyPlanItemRow, 'plan_id' | 'title'>
+      daily_reports: Table<DailyReportRow, 'user_id' | 'report_date' | 'status'>
+      daily_report_items: Table<DailyReportItemRow, 'report_id' | 'result'>
+      report_amendments: Table<ReportAmendmentRow, 'report_id' | 'body'>
     }
     Views: { [_ in never]: never }
     Functions: {
       fn_today_vn: { Args: Record<string, never>; Returns: string }
       fn_is_workday: { Args: { p_date: string }; Returns: boolean }
+      fn_my_day: { Args: Record<string, never>; Returns: Json }
+      fn_day_detail: { Args: { p_user: string; p_date: string }; Returns: Json }
+      fn_plan_prefill: { Args: Record<string, never>; Returns: Json }
+      fn_submit_daily_plan: {
+        Args: { p_items: Json; p_route_plan?: string | null; p_note?: string | null }
+        Returns: string
+      }
+      fn_add_plan_item: {
+        Args: {
+          p_title: string
+          p_kind?: PlanItemKind
+          p_task_id?: string | null
+          p_estimate_minutes?: number | null
+        }
+        Returns: string
+      }
+      fn_remove_plan_item: {
+        Args: { p_item: string; p_reason?: string | null }
+        Returns: undefined
+      }
+      fn_update_plan_meta: {
+        Args: { p_route_plan: string | null; p_note: string | null }
+        Returns: undefined
+      }
+      fn_submit_daily_report: {
+        Args: {
+          p_items: Json
+          p_metrics?: Json
+          p_blockers?: string | null
+          p_need_decision?: string | null
+          p_tomorrow_note?: string | null
+        }
+        Returns: string
+      }
+      fn_review_plan: { Args: { p_plan: string; p_comment?: string | null }; Returns: undefined }
+      fn_review_report: {
+        Args: { p_report: string; p_comment?: string | null }
+        Returns: undefined
+      }
+      fn_team_day: { Args: { p_date?: string | null }; Returns: TeamDayRow[] }
     }
     Enums: {
       role_enum: Role
       leave_type: LeaveType
       audit_action: AuditAction
+      task_status: TaskStatus
+      task_priority: TaskPriority
+      plan_item_kind: PlanItemKind
+      report_status: ReportStatus
+      report_result: ReportResult
     }
     CompositeTypes: { [_ in never]: never }
   }

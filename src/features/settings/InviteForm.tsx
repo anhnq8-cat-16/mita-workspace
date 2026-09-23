@@ -40,11 +40,14 @@ export function TeamPicker({
   value,
   leadValue,
   onChange,
+  withLead = true,
 }: {
   teams: { id: string; name: string }[]
   value: string[]
   leadValue: string[]
   onChange: (teams: string[], leadTeams: string[]) => void
+  /** hiện nút ★ trưởng nhóm */
+  withLead?: boolean
 }) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -74,7 +77,7 @@ export function TeamPicker({
             >
               {vi.teams[team.id] ?? team.name}
             </button>
-            {member && (
+            {member && withLead && (
               <button
                 type="button"
                 title={t.leadOf}

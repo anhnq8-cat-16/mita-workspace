@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
+  ExtraWorkdayRow,
+  HolidayRow,
   InvitationRow,
   Json,
   ProfileRow,
@@ -175,7 +177,7 @@ export function useSettings() {
 }
 
 /** Đọc 1 giá trị cài đặt (đã có cache) */
-export function useSetting<T extends Json>(key: string): T | undefined {
+export function useSetting<T>(key: string): T | undefined {
   const { data } = useSettings()
   return data?.find((s) => s.key === key)?.value as T | undefined
 }
@@ -188,5 +190,82 @@ export function useUpdateSetting() {
       throwIfError(error)
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: settingsKeys.settings }),
+  })
+}
+
+export const calendarKeys = {
+  holidays: ['holidays'] as const,
+  extra: ['extra_workdays'] as const,
+}
+
+export function useHolidays() {
+  return useQuery({
+    queryKey: calendarKeys.holidays,
+    queryFn: async (): Promise<HolidayRow[]> => {
+      const { data, error } = await supabase
+        .from('holidays')
+        .select('*')
+        .order('date', { ascending: false })
+      throwIfError(error)
+      return data ?? []
+    },
+  })
+}
+
+export function useExtraWorkdays() {
+  return useQuery({
+    queryKey: calendarKeys.extra,
+    queryFn: async (): Promise<ExtraWorkdayRow[]> => {
+      const { data, error } = await supabase
+        .from('extra_workdays')
+        .select('*')
+        .order('date', { ascending: false })
+      throwIfError(error)
+      return data ?? []
+    },
+  })
+}
+
+function useInvalidateCalendar() {
+  const qc = useQueryClient()
+  return () =>
+    Promise.all([
+      qc.invalidateQueries({ queryKey: calendarKeys.holidays }),
+      qc.invalidateQueries({ queryKey: calendarKeys.extra }),
+      qc.invalidateQueries({ queryKey: ['day'] }),
+    ])
+}
+
+export function useSaveCalendarDay() {
+  const invalidate = useInvalidateCalendar()
+  return useMutation({
+    mutationFn: async (
+      input:
+        | { kind: 'holiday'; date: string; name: string }
+        | { kind: 'extra'; date: string; name: string; team_ids: string[] },
+    ) => {
+      const { error } =
+        input.kind === 'holiday'
+          ? await supabase.from('holidays').upsert({ date: input.date, name: input.name.trim() })
+          : await supabase
+              .from('extra_workdays')
+              .upsert({ date: input.date, name: input.name.trim(), team_ids: input.team_ids })
+      throwIfError(error)
+    },
+    onSuccess: invalidate,
+  })
+}
+
+export function useDeleteCalendarDay() {
+  const invalidate = useInvalidateCalendar()
+  return useMutation({
+    mutationFn: async (input: { kind: 'holiday' | 'extra'; date: string }) => {
+      const { error } = await supabase
+        .from(input.kind === 'holiday' ? 'holidays' : 'extra_workdays')
+        .delete()
+        .eq('date', input.date)
+      throwIfError(error)
+    },
+    onSuccess: invalidate,
   })
 }

@@ -82,6 +82,14 @@ begin
 end;
 $$;
 
+-- Giả lập thời điểm hiện tại (fn_now đọc app.now), ví dụ '2026-09-29 08:30+07'
+create or replace function tests.set_now(p_ts text) returns void
+language plpgsql as $$
+begin
+  perform set_config('app.now', p_ts, true);
+end;
+$$;
+
 grant execute on all functions in schema tests to anon, authenticated, service_role;
 
 set search_path = public, extensions;

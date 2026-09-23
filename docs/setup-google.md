@@ -2,7 +2,7 @@
 
 Hướng dẫn cho người không chuyên. Làm lần lượt từng bước. Cần tài khoản **quản trị Google Workspace** (Super Admin).
 
-Ký hiệu: `[DOMAIN]` = domain email công ty (ví dụ `mitafood.vn`), `[SYSTEM_USER]` = tài khoản hệ thống dùng để gửi email / quản lý Drive (ví dụ `he-thong@mitafood.vn`).
+Thông tin công ty: domain `mitaexport.com`; tài khoản hệ thống `sale05@mitaexport.com` (gửi email nhắc việc, quản lý file trên Shared Drive). Ứng dụng chạy tại `https://work.mitaexport.com`.
 
 > **Milestone 0 chỉ cần mục 3 (đăng nhập Google).** Các mục 1, 2, 4, 5 cần từ M1 (email) và M3/M4 (Drive), có thể làm sau.
 
@@ -11,14 +11,17 @@ Ký hiệu: `[DOMAIN]` = domain email công ty (ví dụ `mitafood.vn`), `[SYSTE
 ## 1. Google Admin Console – nhóm & tài khoản hệ thống (cần từ M1)
 
 1. Vào <https://admin.google.com> bằng tài khoản Super Admin.
-2. **Tài khoản hệ thống:** menu trái **Thư mục → Người dùng → Thêm người dùng mới**. Tạo `[SYSTEM_USER]` (cần license Workspace). Có thể dùng luôn tài khoản admin nếu không muốn tốn license, nhưng tài khoản riêng an toàn hơn.
+2. **Tài khoản hệ thống:** dùng `sale05@mitaexport.com` (đã có). Lưu ý:
+   - Email nhắc việc sẽ gửi **từ** địa chỉ này và nằm trong mục *Đã gửi* của hộp thư sale05.
+   - Không đổi mật khẩu/xóa tài khoản này khi chưa đổi `GOOGLE_SYSTEM_USER` trong Supabase, nếu không email và Drive sẽ ngừng chạy.
+   - Nếu sau này muốn tách riêng, tạo tài khoản mới rồi chỉ cần đổi secret `GOOGLE_SYSTEM_USER` + `settings.system_user_email`.
 3. **Google Groups:** menu trái **Thư mục → Nhóm → Tạo nhóm**. Tạo 4 nhóm:
    | Email nhóm | Thành viên |
    |---|---|
-   | `all@[DOMAIN]` | Tất cả nhân viên dùng hệ thống |
-   | `sales@[DOMAIN]` | Team Sale nội địa |
-   | `mkt@[DOMAIN]` | Team Marketing |
-   | `managers@[DOMAIN]` | Quý Anh, chị Hà, Trang |
+   | `all@mitaexport.com` | Tất cả nhân viên dùng hệ thống |
+   | `sales@mitaexport.com` | Team Sale nội địa |
+   | `mkt@mitaexport.com` | Team Marketing |
+   | `managers@mitaexport.com` | Quý Anh, chị Hà, Trang |
 
 ## 2. Shared Drive (cần từ M3/M4 – ảnh check-in, thư viện)
 
@@ -26,16 +29,16 @@ Ký hiệu: `[DOMAIN]` = domain email công ty (ví dụ `mitafood.vn`), `[SYSTE
 2. Tạo 3 Shared Drive, rồi bấm tên drive → **Quản lý thành viên**:
    | Shared Drive | Thành viên → quyền |
    |---|---|
-   | `MITA Library` | `all@` → Người xem; `mkt@`, `managers@` → Người quản lý nội dung; `[SYSTEM_USER]` → Người quản lý nội dung |
-   | `MITA Sales Private` | `sales@`, `managers@` → Người quản lý nội dung; `[SYSTEM_USER]` → Người quản lý nội dung |
-   | `MITA Backup` | `managers@` → Người quản lý nội dung; `[SYSTEM_USER]` → Người quản lý nội dung |
+   | `MITA Library` | `all@` → Người xem; `mkt@`, `managers@` → Người quản lý nội dung; `sale05@mitaexport.com` → Người quản lý nội dung |
+   | `MITA Sales Private` | `sales@`, `managers@` → Người quản lý nội dung; `sale05@mitaexport.com` → Người quản lý nội dung |
+   | `MITA Backup` | `managers@` → Người quản lý nội dung; `sale05@mitaexport.com` → Người quản lý nội dung |
 3. Thư mục bên trong sẽ được hướng dẫn tạo ở M4 (ID thư mục nhập vào **Cài đặt → Thông số → `drive.folders`**).
 
 ## 3. Google Cloud – đăng nhập Google (cần ngay cho M0)
 
 ### 3.1 Tạo project
 1. Vào <https://console.cloud.google.com> **bằng tài khoản công ty** (không dùng Gmail cá nhân).
-2. Thanh trên cùng bấm ô chọn project → **New Project**. Tên: `mita-workspace`. **Organization / Location**: chọn tổ chức `[DOMAIN]`. Bấm **Create**.
+2. Thanh trên cùng bấm ô chọn project → **New Project**. Tên: `mita-workspace`. **Organization / Location**: chọn tổ chức `mitaexport.com`. Bấm **Create**.
 3. Đảm bảo ô chọn project đang hiển thị `mita-workspace`.
 
 ### 3.2 Màn hình đồng ý OAuth (loại Internal)
@@ -47,7 +50,7 @@ Ký hiệu: `[DOMAIN]` = domain email công ty (ví dụ `mitafood.vn`), `[SYSTE
 ### 3.3 Tạo OAuth Client
 1. Trong Google Auth Platform chọn **Clients → + Create client** (giao diện cũ: **Credentials → Create credentials → OAuth client ID**).
 2. **Application type:** `Web application`. **Name:** `Supabase`.
-3. **Authorized JavaScript origins:** thêm `https://work.[DOMAIN]` (và `http://localhost:5173` nếu chạy thử trên máy).
+3. **Authorized JavaScript origins:** thêm `https://work.mitaexport.com` (và `http://localhost:5173` nếu chạy thử trên máy).
 4. **Authorized redirect URIs:** thêm `https://<project-ref>.supabase.co/auth/v1/callback`
    (lấy chính xác tại Supabase → **Authentication → Sign In / Providers → Google → Callback URL**, xem `docs/setup-supabase.md`).
 5. Bấm **Create**. Sao chép **Client ID** và **Client secret** → nhập vào Supabase (mục 3 của `setup-supabase.md`). Không gửi secret qua chat/email.

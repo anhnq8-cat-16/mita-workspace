@@ -3,7 +3,10 @@ import { AuthCallback } from '@/features/auth/AuthCallback'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
 import { ComingSoon } from '@/features/common/ComingSoon'
+import { DailyGate } from '@/features/daily/DailyGate'
 import { HomePage } from '@/features/home/HomePage'
+import { DayDetailPage } from '@/features/reports/DayDetailPage'
+import { ReportsPage } from '@/features/reports/ReportsPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 import { AppLayout } from './AppLayout'
 import { LibraryLayout } from './LibraryLayout'
@@ -15,7 +18,9 @@ export const router = createBrowserRouter([
   {
     element: (
       <RequireAuth>
-        <Outlet />
+        <DailyGate>
+          <Outlet />
+        </DailyGate>
       </RequireAuth>
     ),
     children: [
@@ -48,7 +53,8 @@ export const router = createBrowserRouter([
             ),
           },
           { path: 'san-pham', element: <ComingSoon navKey="products" milestone="M4" /> },
-          { path: 'bao-cao', element: <ComingSoon navKey="reports" milestone="M1" /> },
+          { path: 'bao-cao', element: <ReportsPage /> },
+          { path: 'bao-cao/:userId/:date', element: <DayDetailPage /> },
           {
             path: 'quan-ly',
             element: (

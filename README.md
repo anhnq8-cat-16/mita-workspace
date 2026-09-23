@@ -3,7 +3,9 @@
 Ứng dụng web nội bộ của CTCP XNK MITAFOOD: kế hoạch ngày, báo cáo cuối ngày, giao việc, lead/khách hàng, thư viện tư liệu, sản phẩm & bảng giá, dashboard quản lý.
 Đặc tả đầy đủ: [SPEC.md](SPEC.md).
 
-**Trạng thái:** Milestone 0 (Nền tảng): đăng nhập Google, lời mời/kích hoạt, phân quyền, layout theo vai trò.
+**Trạng thái:**
+- M0 Nền tảng: đăng nhập Google, lời mời/kích hoạt, phân quyền, layout theo vai trò.
+- M1 Kỷ luật ngày: cổng kế hoạch ngày, báo cáo cuối ngày + bổ sung, review, nghỉ phép, ngày lễ/ngày làm bù, chuyển việc tồn, nhắc việc & tóm tắt tự động (email Gmail API + Google Chat).
 
 ## Công nghệ
 React + Vite + TypeScript (strict), Tailwind CSS, TanStack Query, react-hook-form + zod · Supabase (Postgres + RLS, Auth Google, Realtime, Edge Functions, pg_cron) · Cloudflare Pages · GitHub Actions.
@@ -44,13 +46,18 @@ npm run typecheck      # TypeScript
 npm test               # Vitest (logic nghiệp vụ)
 npx supabase test db   # test RLS trên Supabase local (pgTAP)
 npm run test:rls       # hoặc: test RLS trên Postgres thường, không cần Docker (cần psql, pg_prove, pgtap)
+npx deno test supabase/functions/_shared   # test Edge Functions (Deno)
 ```
+
+### Lịch tự động hoạt động thế nào
+`pg_cron` gọi `public.fn_cron_tick()` mỗi phút. Hàm này so giờ Việt Nam với các mốc trong `settings`, chạy mỗi job (`remind_plan`, `summary_morning`, `remind_report`, `summary_evening`, `close_day`) đúng 1 lần/ngày (ghi vào `cron_runs`), tạo thông báo trong app và đưa email/Google Chat vào bảng `outbox`. Sau đó gọi Edge Function `notify` (qua `pg_net`) để gửi.
+Khác SPEC một chút: logic job nằm trong SQL thay cho Edge Function `cron-runner`, để test được bằng pgTAP (giả lập giờ qua `app.now`) và đổi giờ trong Cài đặt không cần sửa cron.
 
 ## Deploy (lần đầu)
 Làm theo thứ tự:
 1. [docs/setup-google.md](docs/setup-google.md): OAuth Internal, OAuth Client (và service account, Shared Drive cho các milestone sau).
 2. [docs/setup-supabase.md](docs/setup-supabase.md): project Singapore, migration, provider Google, domain + danh sách nhân sự.
-3. [docs/setup-cloudflare.md](docs/setup-cloudflare.md): Cloudflare Pages + tên miền `work.[DOMAIN]`.
+3. [docs/setup-cloudflare.md](docs/setup-cloudflare.md): Cloudflare Pages + tên miền `work.mitaexport.com`.
 
 Các lần sau: merge vào `main` thì Cloudflare tự deploy frontend; thay đổi DB chạy `npx supabase db push`.
 

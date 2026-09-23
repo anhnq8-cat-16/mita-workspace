@@ -30,6 +30,19 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ci-placeholder
           VITE_GOOGLE_HD: example.com
 
+  functions:
+    name: Edge Functions (Deno)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno check notify/index.ts
+        working-directory: supabase/functions
+      - run: deno test _shared/
+        working-directory: supabase/functions
+
   database:
     name: Migrations + RLS tests (Supabase)
     runs-on: ubuntu-latest
