@@ -1,0 +1,34 @@
+name: Thử khôi phục backup
+
+# Chạy tay: tải bản backup mới nhất từ MITA Backup rồi khôi phục vào project Supabase TEST
+# (secret TEST_DB_URL). Không bao giờ trỏ TEST_DB_URL vào project đang dùng thật.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Cài psql
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Tải bản mới nhất
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SYSTEM_USER: ${{ secrets.GOOGLE_SYSTEM_USER }}
+          BACKUP_DRIVE_FOLDER_ID: ${{ secrets.BACKUP_DRIVE_FOLDER_ID }}
+        run: node scripts/backup/backup.mjs download-latest latest.sql.gz
+      - name: Khôi phục vào project test
+        env:
+          TARGET_DB_URL: ${{ secrets.TEST_DB_URL }}
+          CONFIRM: 'yes'
+        run: |
+          test -n "$TARGET_DB_URL" || { echo "Chưa khai báo secret TEST_DB_URL"; exit 1; }
+          bash scripts/backup/restore.sh latest.sql.gz

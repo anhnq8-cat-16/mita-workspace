@@ -10,6 +10,7 @@ export type NavKey =
   | 'products'
   | 'reports'
   | 'dashboard'
+  | 'audit'
   | 'settings'
 
 export interface NavItem {
@@ -32,6 +33,7 @@ export const NAV_ITEMS: NavItem[] = [
   { key: 'products', path: '/san-pham' },
   { key: 'reports', path: '/bao-cao' },
   { key: 'dashboard', path: '/quan-ly' },
+  { key: 'audit', path: '/nhat-ky' },
   { key: 'settings', path: '/cai-dat' },
 ]
 
@@ -48,6 +50,8 @@ export function canAccess(key: NavKey, user: NavUser): boolean {
       return inSales(user) || isManagerOrAdmin(user)
     case 'dashboard':
       return user.role !== 'staff'
+    case 'audit':
+      return isManagerOrAdmin(user)
     case 'settings':
       return user.role === 'admin'
     default:

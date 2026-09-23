@@ -582,6 +582,29 @@ export type AuditLogRow = {
   at: string
 }
 
+export type CronRunRow = {
+  job: string
+  run_date: string
+  ran_at: string
+  result: Json
+  error: string | null
+}
+
+export type OutboxRow = {
+  id: string
+  channel: 'email' | 'chat'
+  recipient: string
+  subject: string | null
+  body: string
+  type: string
+  status: 'pending' | 'sent' | 'failed'
+  attempts: number
+  last_error: string | null
+  created_at: string
+  updated_at: string
+  sent_at: string | null
+}
+
 export type TeamDayRow = {
   user_id: string
   full_name: string | null
@@ -618,6 +641,8 @@ export interface Database {
       leaves: Table<LeaveRow, 'user_id' | 'date'>
       notifications: Table<NotificationRow, 'user_id' | 'type' | 'title'>
       audit_log: Table<AuditLogRow, 'table_name' | 'action'>
+      cron_runs: Table<CronRunRow, 'job' | 'run_date'>
+      outbox: Table<OutboxRow, 'channel' | 'recipient' | 'body' | 'type'>
       extra_workdays: Table<ExtraWorkdayRow, 'date' | 'name'>
       tasks: Table<TaskRow, 'title'>
       daily_plans: Table<DailyPlanRow, 'user_id' | 'plan_date'>

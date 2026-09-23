@@ -54,11 +54,11 @@ import {
   ProgressBar,
   RevenueChart,
   Ring,
-  ScoreBadge,
   Sparkline,
   StatusBar,
 } from './parts'
 import type { Period } from './period'
+import { ScoreBadge } from './score-badge'
 
 const t = vi.dashboard
 

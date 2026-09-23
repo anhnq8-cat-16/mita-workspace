@@ -1,8 +1,9 @@
 import { LogOut, Menu, X } from 'lucide-react'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { NavLink, Outlet, useMatches } from 'react-router-dom'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 import { teamIds, useAuth, useMe } from '@/features/auth/auth-context'
 import { NotificationBell } from '@/features/notifications/NotificationBell'
 import { vi } from '@/i18n/vi'
@@ -100,7 +101,15 @@ export function AppLayout() {
             handle.wide ? 'max-w-[1400px] sm:px-6 md:pt-8 lg:px-8' : 'max-w-6xl',
           )}
         >
-          <Outlet />
+          <Suspense
+            fallback={
+              <div className="flex justify-center p-10">
+                <Spinner />
+              </div>
+            }
+          >
+            <Outlet />
+          </Suspense>
         </main>
       </div>
 

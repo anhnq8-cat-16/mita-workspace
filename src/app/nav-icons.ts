@@ -6,6 +6,7 @@ import {
   KanbanSquare,
   MapPin,
   Package,
+  ScrollText,
   Settings,
   Target,
   Users,
@@ -23,5 +24,6 @@ export const NAV_ICONS: Record<NavKey, LucideIcon> = {
   products: Package,
   reports: ClipboardList,
   dashboard: BarChart3,
+  audit: ScrollText,
   settings: Settings,
 }

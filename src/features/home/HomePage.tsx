@@ -7,6 +7,7 @@ import { useMyDay } from '@/features/daily/api'
 import { PlanCard } from '@/features/daily/PlanCard'
 import { DeadlineHint, PlanForm } from '@/features/daily/PlanForm'
 import { ReportCard } from '@/features/daily/ReportCard'
+import { InstallBanner } from '@/features/pwa/InstallBanner'
 import { vi } from '@/i18n/vi'
 import { formatDateVN, weekdayVN } from '@/lib/date-vn'
 
@@ -24,6 +25,8 @@ export function HomePage() {
           {vi.home.todayIs(weekdayVN(new Date()), formatDateVN(new Date()))}
         </p>
       </div>
+
+      <InstallBanner />
 
       {day.isPending && (
         <div className="flex justify-center p-6">

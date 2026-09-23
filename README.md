@@ -3,27 +3,30 @@
 Ứng dụng web nội bộ của CTCP XNK MITAFOOD: kế hoạch ngày, báo cáo cuối ngày, giao việc, lead/khách hàng, thư viện tư liệu, sản phẩm & bảng giá, dashboard quản lý.
 Đặc tả đầy đủ: [SPEC.md](SPEC.md).
 
-**Trạng thái:**
+**Trạng thái:** đủ 7 giai đoạn M0–M6, sẵn sàng bàn giao ([docs/ban-giao.md](docs/ban-giao.md)).
 - M0 Nền tảng: đăng nhập Google, lời mời/kích hoạt, phân quyền, layout theo vai trò.
 - M1 Kỷ luật ngày: cổng kế hoạch ngày, báo cáo cuối ngày + bổ sung, review, nghỉ phép, ngày lễ/ngày làm bù, chuyển việc tồn, nhắc việc & tóm tắt tự động (email Gmail API + Google Chat).
-- M4 Thư viện & sản phẩm: upload resumable lên Shared Drive (tiến độ, hủy, file lớn), duyệt + tự chuyển thư mục đích, ảnh thu nhỏ có kiểm tra quyền, YouTube, `/thu-vien` độc lập; sản phẩm + bảng giá (sửa hàng loạt, lịch sử giá, in/PDF), 37 sản phẩm seed (giá để trống).
-- M3 Sales: lead (kiểm tra trùng, SLA, hàng chờ, phân công, pipeline kéo-thả, hoạt động, chốt/mất, gộp trùng), khách hàng + bản đồ, đơn hàng + KPI tháng, check-in GPS + ảnh lên Drive, báo cáo Sale tự điền.
-- M5 Dashboard & tuân thủ: `/quan-ly` 6 khối (từng người, chờ xử lý, điểm tuân thủ + xu hướng 4 tuần, Sales, mục tiêu tuần, bản đồ check-in), xuất CSV, leo thang tự động (việc gặp 1-1), email điểm tuần + báo cáo tuần thứ Hai.
 - M2 Công việc & mục tiêu: Kanban kéo-thả realtime (5 chế độ xem, bộ lọc), chi tiết việc (Markdown, checklist, bình luận @nhắc tên, link tư liệu, lịch sử), việc nhạy cảm, giao việc hàng loạt, mục tiêu tuần.
+- M3 Sales: lead (kiểm tra trùng, SLA, hàng chờ, phân công, pipeline kéo-thả, hoạt động, chốt/mất, gộp trùng), khách hàng + bản đồ, đơn hàng + KPI tháng, check-in GPS + ảnh lên Drive, báo cáo Sale tự điền.
+- M4 Thư viện & sản phẩm: upload resumable lên Shared Drive (tiến độ, hủy, file lớn), duyệt + tự chuyển thư mục đích, ảnh thu nhỏ có kiểm tra quyền, YouTube, `/thu-vien` độc lập; sản phẩm + bảng giá (sửa hàng loạt, lịch sử giá, in/PDF), 37 sản phẩm seed (giá để trống).
+- M5 Dashboard & tuân thủ: `/quan-ly` 6 khối (từng người, chờ xử lý, điểm tuân thủ + xu hướng 4 tuần, Sales, mục tiêu tuần, bản đồ check-in), xuất CSV, leo thang tự động (việc gặp 1-1), email điểm tuần + báo cáo tuần thứ Hai.
+- M6 Hoàn thiện: cài lên điện thoại (PWA), backup hằng đêm lên `MITA Backup` + thử khôi phục, trang Nhật ký (thay đổi dữ liệu + tình trạng job/email), tách mã theo trang (trang chính < 2 giây trên 4G), test E2E Playwright; dashboard giao diện premium (bento, Recharts).
 
 ## Công nghệ
-React + Vite + TypeScript (strict), Tailwind CSS, TanStack Query, react-hook-form + zod · Supabase (Postgres + RLS, Auth Google, Realtime, Edge Functions, pg_cron) · Cloudflare Pages · GitHub Actions.
+React + Vite + TypeScript (strict), Tailwind CSS, TanStack Query, react-hook-form + zod, Recharts, PWA (vite-plugin-pwa) · Supabase (Postgres + RLS, Auth Google, Realtime, Edge Functions, pg_cron) · Cloudflare Pages · GitHub Actions.
 
 ## Cấu trúc
 ```
 src/app            router, layout, điều hướng
-src/features       auth, home, settings, notifications… (mỗi module 1 thư mục)
+src/features       auth, home, daily, tasks, sales, library, dashboard, audit, pwa… (mỗi module 1 thư mục)
 src/components/ui  component giao diện dùng chung
 src/lib            supabase client, giờ Việt Nam, định dạng tiền, quy tắc điều hướng
 src/i18n/vi.ts     toàn bộ chuỗi tiếng Việt
 supabase/migrations  SQL migration (mọi thay đổi DB)
 supabase/tests       test RLS (pgTAP)
-docs/              hướng dẫn cài đặt & vận hành
+docs/              hướng dẫn cài đặt, vận hành, backup, bàn giao
+e2e/               test E2E Playwright (Supabase giả lập)
+scripts/backup     backup hằng đêm / khôi phục (dùng trong GitHub Actions)
 ```
 
 ## Chạy trên máy (local)
@@ -51,6 +54,9 @@ npm test               # Vitest (logic nghiệp vụ)
 npx supabase test db   # test RLS trên Supabase local (pgTAP)
 npm run test:rls       # hoặc: test RLS trên Postgres thường, không cần Docker (cần psql, pg_prove, pgtap)
 npx deno test supabase/functions/_shared   # test Edge Functions (Deno)
+npm run test:scripts   # test script backup (Node)
+npm run test:e2e       # E2E Playwright trên bản build (lần đầu: npx playwright install chromium)
+PERF=1 npx playwright test perf --project=desktop   # đo thời gian tải trên 4G giả lập
 ```
 
 ### Lịch tự động hoạt động thế nào
@@ -66,7 +72,9 @@ Làm theo thứ tự:
 Các lần sau: merge vào `main` thì Cloudflare tự deploy frontend; thay đổi DB chạy `npx supabase db push`.
 
 ## Vận hành & xử lý sự cố
-Xem [docs/van-hanh.md](docs/van-hanh.md) (thêm người, khóa tài khoản, đổi giờ hạn chót, lỗi đăng nhập thường gặp).
+- [docs/van-hanh.md](docs/van-hanh.md): thêm người, khóa tài khoản, đổi giờ hạn chót, cài app lên điện thoại, nhật ký, lỗi thường gặp.
+- [docs/backup.md](docs/backup.md): backup hằng đêm, thử khôi phục, khôi phục thật.
+- [docs/ban-giao.md](docs/ban-giao.md): hệ thống nằm ở đâu, checklist dùng thật, việc định kỳ.
 
 ## Nguyên tắc phát triển
 - Mọi thay đổi database bằng migration trong `supabase/migrations`; mọi bảng bật RLS và có test RLS theo vai trò.

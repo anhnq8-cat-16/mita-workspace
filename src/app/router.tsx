@@ -1,24 +1,30 @@
+import { Suspense } from 'react'
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
+import { FullPageSpinner } from '@/components/ui/spinner'
 import { AuthCallback } from '@/features/auth/AuthCallback'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
-import { CheckInPage } from '@/features/checkin/CheckInPage'
 import { DailyGate } from '@/features/daily/DailyGate'
-import { DashboardPage } from '@/features/dashboard/DashboardPage'
-import { GoalsPage } from '@/features/goals/GoalsPage'
 import { HomePage } from '@/features/home/HomePage'
-import { LibraryPage } from '@/features/library/LibraryPage'
-import { PriceListPrint } from '@/features/products/PriceListPrint'
-import { ProductsPage } from '@/features/products/ProductsPage'
-import { DayDetailPage } from '@/features/reports/DayDetailPage'
-import { ReportsPage } from '@/features/reports/ReportsPage'
-import { SalesPage } from '@/features/sales/SalesPage'
-import { SettingsPage } from '@/features/settings/SettingsPage'
-import { TasksPage } from '@/features/tasks/TasksPage'
 import { AppLayout } from './AppLayout'
+import {
+  AuditPage,
+  CheckInPage,
+  DashboardPage,
+  DayDetailPage,
+  GoalsPage,
+  LibraryPage,
+  PriceListPrint,
+  ProductsPage,
+  ReportsPage,
+  SalesPage,
+  SettingsPage,
+  TasksPage,
+} from './lazy-pages'
 import { LibraryLayout } from './LibraryLayout'
 import { RequireNav } from './RequireNav'
 
+// Trang Hôm nay + cổng kế hoạch tải ngay; các trang khác tải khi mở (xem lazy-pages.ts)
 export const router = createBrowserRouter([
   { path: '/dang-nhap', element: <LoginPage /> },
   { path: '/auth/callback', element: <AuthCallback /> },
@@ -40,7 +46,11 @@ export const router = createBrowserRouter([
       {
         // Bảng giá bản in / PDF (không có menu)
         path: '/san-pham/in',
-        element: <PriceListPrint />,
+        element: (
+          <Suspense fallback={<FullPageSpinner />}>
+            <PriceListPrint />
+          </Suspense>
+        ),
       },
       {
         element: <AppLayout />,
@@ -73,6 +83,14 @@ export const router = createBrowserRouter([
             element: (
               <RequireNav navKey="dashboard">
                 <DashboardPage />
+              </RequireNav>
+            ),
+          },
+          {
+            path: 'nhat-ky',
+            element: (
+              <RequireNav navKey="audit">
+                <AuditPage />
               </RequireNav>
             ),
           },

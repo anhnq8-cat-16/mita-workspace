@@ -1,0 +1,44 @@
+name: Backup DB hằng đêm
+
+# 01:00 giờ Việt Nam = 18:00 UTC. Bấm "Run workflow" để chạy ngay.
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: pg_dump → MITA Backup/db
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Dump database
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: bash scripts/backup/dump.sh backup.sql.gz
+      - name: Kiểm tra file backup
+        run: |
+          gunzip -t backup.sql.gz
+          gunzip -c backup.sql.gz | grep -q 'COPY "public"."profiles"\|COPY public.profiles' \
+            || { echo "Backup không có dữ liệu profiles"; exit 1; }
+      - name: Tải lên Google Drive (giữ 30 bản)
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SYSTEM_USER: ${{ secrets.GOOGLE_SYSTEM_USER }}
+          BACKUP_DRIVE_FOLDER_ID: ${{ secrets.BACKUP_DRIVE_FOLDER_ID }}
+          BACKUP_KEEP: '30'
+        run: node scripts/backup/backup.mjs upload backup.sql.gz

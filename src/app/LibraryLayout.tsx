@@ -1,5 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
+import { Suspense } from 'react'
 import { Link, Outlet } from 'react-router-dom'
+import { Spinner } from '@/components/ui/spinner'
 import { vi } from '@/i18n/vi'
 
 /** Layout gọn cho /thu-vien để gửi link riêng (không có menu công việc) */
@@ -20,7 +22,15 @@ export function LibraryLayout() {
         </Link>
       </header>
       <main className="mx-auto w-full max-w-6xl p-4">
-        <Outlet />
+        <Suspense
+          fallback={
+            <div className="flex justify-center p-10">
+              <Spinner />
+            </div>
+          }
+        >
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   )

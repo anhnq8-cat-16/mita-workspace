@@ -5,8 +5,8 @@ import type { ComplianceDetail } from '@/lib/database.types'
 import { todayVN } from '@/lib/date-vn'
 import { useBands, useMyCompliance } from './api'
 import { formatScore } from './compliance'
-import { ScoreBadge } from './parts'
 import { periodOf } from './period'
+import { ScoreBadge } from './score-badge'
 
 const t = vi.dashboard.compliance
 

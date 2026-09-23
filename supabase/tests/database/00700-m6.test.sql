@@ -1,7 +1,7 @@
 -- M6: doanh số theo ngày (biểu đồ lũy kế), quyền xem nhật ký
 begin;
 set local search_path = public, extensions, tests;
-select plan(7);
+select plan(8);
 
 select tests.seed_roster();
 select tests.set_now('2026-10-12 10:00+07');
@@ -36,6 +36,11 @@ select tests.authenticate_as('manager@mita.test');
 select ok((select count(*) from audit_log where table_name = 'settings') > 0, 'Manager xem được nhật ký');
 select tests.authenticate_as('admin@mita.test');
 select ok((select count(*) from audit_log where table_name = 'orders') >= 4, 'Admin xem được nhật ký đơn hàng');
+select is(
+  (select diff ->> '_label' from audit_log where table_name = 'settings' and row_id = 'plan_deadline'
+   order by at desc limit 1),
+  'plan_deadline', 'Nhật ký sửa có nhãn bản ghi'
+);
 select tests.authenticate_as('mai@mita.test');
 select is((select count(*)::int from audit_log), 0, 'Trưởng nhóm không xem nhật ký');
 select tests.authenticate_as('long@mita.test');

@@ -82,4 +82,4 @@ select vault.create_secret('<giống hệt CRON_SECRET ở 5.1>', 'cron_secret')
 Mọi mốc giờ (08:30 nhắc kế hoạch, 09:15 tóm tắt, 17:00 nhắc báo cáo, 18:00 tóm tắt, 23:59 chốt ngày) đọc từ **Cài đặt → Thông số** theo giờ Việt Nam; không cần sửa cron khi đổi giờ.
 
 ## 7. Khuyến nghị
-Khi cả team dùng thật, nâng lên gói **Pro** (Settings → Billing) để có backup tự động hằng ngày và không bị tạm dừng khi ít truy cập. Backup hằng đêm lên Drive (M6) vẫn giữ.
+Khi cả team dùng thật, nâng lên gói **Pro** (Settings → Billing) để có backup tự động hằng ngày và không bị tạm dừng khi ít truy cập. Backup hằng đêm lên Drive vẫn giữ – cài theo [backup.md](backup.md).

@@ -1,6 +1,6 @@
 # Vận hành Mita Workspace
 
-> Tài liệu được bổ sung theo từng milestone. Bản hiện tại: M5.
+> Tài liệu được bổ sung theo từng milestone. Bản hiện tại: M6 (bàn giao).
 
 ## Thêm người dùng mới
 1. Đăng nhập bằng tài khoản admin → **Cài đặt → Người dùng → Mời người dùng**.
@@ -91,6 +91,20 @@ Mọi thay đổi được ghi vào nhật ký (audit_log).
 - `weekly_kickoff_time` (08:00): mỗi người nhận điểm tuân thủ tuần trước (chuông + email).
 - `weekly_report_time` (07:30): quản lý/admin nhận **báo cáo tuần** – doanh số tuần, doanh số tháng đến nay so KPI, lead (mới, đúng SLA, chốt, mất, đang quá SLA), điểm từng người, mục tiêu tuần – kèm link mở dashboard đúng tuần đó.
 
+## Cài ứng dụng lên điện thoại (PWA)
+- **iPhone (Safari):** mở `https://work.mitaexport.com` → đăng nhập → nút **Chia sẻ** (ô vuông có mũi tên) → **Thêm vào MH chính** → **Thêm**. Phải dùng Safari (Chrome trên iPhone không cài được).
+- **Android (Chrome):** mở trang → đăng nhập → trang *Hôm nay* hiện thẻ **Cài ứng dụng** (hoặc menu ⋮ → **Cài đặt ứng dụng / Thêm vào màn hình chính**).
+- Biểu tượng chữ **M** nền nâu, tên *Mita*. Ứng dụng mở toàn màn hình, không có thanh địa chỉ.
+- Khi có bản mới, góc dưới hiện *"Đã có phiên bản mới"* → **Tải lại** (không tự tải lại để không mất nội dung đang gõ). Không có mạng thì không dùng được (đúng phạm vi v1).
+
+## Nhật ký (M6)
+- **Nhật ký** (`/nhat-ky`) – quản lý và admin: mọi thay đổi ở công việc, kế hoạch, báo cáo, lead, khách, đơn, sản phẩm/giá, thư viện, người dùng, cài đặt, mục tiêu, ngày lễ, leo thang. Lọc theo loại dữ liệu, người thực hiện, thao tác, khoảng ngày; bấm 1 dòng để xem **trước → sau** từng trường; nút **Xuất CSV**.
+- *Hệ thống* = thay đổi do job tự động (ví dụ chốt ngày ghi *Bỏ lỡ*). Không ai xóa hoặc sửa được nhật ký qua ứng dụng.
+- Tab **Hệ thống** (admin): các job tự động đã chạy (kết quả/lỗi) và hàng đợi email/Google Chat (chờ gửi, lỗi) – thay cho việc chạy SQL khi kiểm tra sự cố.
+
+## Backup & khôi phục (M6)
+Xem [backup.md](backup.md): cài đặt backup hằng đêm lên `MITA Backup`, theo dõi, thử khôi phục và khôi phục thật.
+
 ## Đổi giờ, ngày lễ, ngày làm bù
 - Giờ hạn chót/nhắc: **Cài đặt → Thông số** (`plan_deadline`, `plan_reminder_time`, `report_open_time`, `report_reminder_time`, `report_deadline`, `report_missed_at`, `summary_evening_time`). Có hiệu lực ngay, không cần sửa gì khác.
 - Thứ làm việc hằng tuần: `workdays` (mặc định `[1,2,3,4,5,6]` = thứ Hai → thứ Bảy).
@@ -119,4 +133,7 @@ Mọi thay đổi được ghi vào nhật ký (audit_log).
 | Dashboard: điểm của 1 người trông sai | Mở **Báo cáo → Team → chọn ngày → bấm tên** để xem từng ngày (Trễ/Bỏ lỡ/Nghỉ). Ngày nghỉ chưa được duyệt vẫn bị tính. Kiểm tra `workdays`, ngày lễ, ngày làm bù. |
 | Không thấy khối Sales trên dashboard | Chỉ quản lý, admin và trưởng nhóm Sale xem được. |
 | Không có email báo cáo tuần | `select * from cron_runs where job = 'weekly_report' order by ran_at desc;` rồi kiểm tra `outbox` như dòng *Không có email nhắc việc*. |
+| iPhone không thấy mục *Thêm vào MH chính* | Đang dùng Chrome/Zalo trên iPhone → mở bằng **Safari**. |
+| Mở app trên điện thoại vẫn là bản cũ | Đóng hẳn app rồi mở lại, bấm **Tải lại** khi có thông báo phiên bản mới. |
+| Backup đêm qua lỗi | Xem [backup.md](backup.md) mục 2. |
 | Cần sửa báo cáo đã nộp | Không sửa được (chủ ý). Nhân viên thêm *Bổ sung* dưới báo cáo. |

@@ -25,22 +25,24 @@ describe('điều hướng theo vai trò', () => {
     expect(canAccess('sales', u)).toBe(true)
   })
 
-  it('lead thấy Quản lý, không thấy Cài đặt', () => {
+  it('lead thấy Quản lý, không thấy Cài đặt / Nhật ký', () => {
     const u = { role: 'lead' as const, teams: ['sales_domestic'] }
     expect(canAccess('dashboard', u)).toBe(true)
     expect(canAccess('settings', u)).toBe(false)
+    expect(canAccess('audit', u)).toBe(false)
   })
 
   it('manager thấy Khách dù không thuộc team Sale', () => {
     const u = { role: 'manager' as const, teams: [] }
     expect(canAccess('sales', u)).toBe(true)
+    expect(canAccess('audit', u)).toBe(true)
     expect(canAccess('settings', u)).toBe(false)
     expect(keys(bottomTabs(u))).toEqual(['today', 'dashboard', 'tasks', 'sales'])
   })
 
   it('admin thấy tất cả', () => {
     const u = { role: 'admin' as const, teams: [] }
-    expect(visibleNav(u)).toHaveLength(10)
+    expect(visibleNav(u)).toHaveLength(11)
   })
 
   it('xuất khẩu: Thư viện + Sản phẩm', () => {
