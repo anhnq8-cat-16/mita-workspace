@@ -99,7 +99,7 @@ select throws_ok($$ select fn_cron_tick() $$, '42501', null, 'Không tự chạy
 -- ---------------------------------------------------------------------------
 select tests.clear_authentication();
 select tests.set_now('2026-09-29 08:29+07');
-select is(fn_cron_tick(), '{}'::jsonb, 'Trước 08:30 chưa chạy nhắc');
+select ok(not (fn_cron_tick() ? 'remind_plan'), 'Trước 08:30 chưa chạy nhắc kế hoạch');
 select tests.set_now('2026-09-29 08:31+07');
 select ok(fn_cron_tick() ? 'remind_plan', 'NT6: 08:30 giờ VN chạy nhắc kế hoạch');
 select tests.set_now('2026-09-29 08:40+07');

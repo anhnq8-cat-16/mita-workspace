@@ -62,3 +62,17 @@ export function isPastTimeVN(hhmm: string, now: Date = new Date()): boolean {
 export function isoWeekday(date: string): number {
   return Number(formatInTimeZone(fromZonedTime(`${date}T12:00:00`, VN_TZ), VN_TZ, 'i'))
 }
+
+/** ISO → giá trị cho <input type="datetime-local"> theo giờ Việt Nam */
+export function toVNInputValue(iso: string | null | undefined): string {
+  if (!iso) return ''
+  return formatInTimeZone(iso, VN_TZ, "yyyy-MM-dd'T'HH:mm")
+}
+
+/** Giá trị <input type="datetime-local"> (giờ Việt Nam) → ISO */
+export function fromVNInputValue(value: string): string | null {
+  if (!value) return null
+  const [date, time] = value.split('T')
+  if (!date || !time) return null
+  return vnDateTime(date, time.slice(0, 5)).toISOString()
+}

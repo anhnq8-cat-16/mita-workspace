@@ -38,7 +38,7 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - run: deno check notify/index.ts
+      - run: deno check notify/index.ts checkin-photo/index.ts
         working-directory: supabase/functions
       - run: deno test _shared/
         working-directory: supabase/functions

@@ -1,4 +1,10 @@
-import { normalizeMetrics, templatesFor, toReportItems, validateReport } from './report-draft'
+import {
+  initialMetrics,
+  normalizeMetrics,
+  templatesFor,
+  toReportItems,
+  validateReport,
+} from './report-draft'
 import type { PlanItem } from './types'
 
 const item = (id: string, title: string, removed: string | null = null) =>
@@ -60,4 +66,20 @@ describe('bản nháp báo cáo', () => {
       }),
     ).toEqual({ sales_domestic: { visits: 3, revenue_vnd: 1250000 } })
   })
+})
+
+it('initialMetrics chỉ điền ô có auto', () => {
+  const groups = [
+    {
+      team: 'sales_domestic',
+      fields: [
+        { key: 'visits', label: '', type: 'number' as const, auto: 'check_ins' },
+        { key: 'manual', label: '', type: 'number' as const },
+      ],
+    },
+  ]
+  expect(initialMetrics(groups, { sales_domestic: { visits: 3, manual: 9 } })).toEqual({
+    sales_domestic: { visits: '3' },
+  })
+  expect(initialMetrics(groups, {})).toEqual({ sales_domestic: {} })
 })

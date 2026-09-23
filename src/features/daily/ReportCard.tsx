@@ -10,15 +10,17 @@ import { formatDateTimeVN, formatTimeVN } from '@/lib/date-vn'
 import { formatVND } from '@/lib/format'
 import { useNow } from '@/lib/use-now'
 import { cn } from '@/lib/utils'
-import { useAddAmendment, useSubmitReport } from './api'
+import { useAddAmendment, useReportAutofill, useSubmitReport } from './api'
 import { ReportBadge } from './badges'
 import { reportState } from './day-status'
 import {
   activeItems,
+  initialMetrics,
   normalizeMetrics,
   templatesFor,
   toReportItems,
   validateReport,
+  type AutofillValues,
   type ItemResult,
   type ReportTemplates,
 } from './report-draft'
@@ -57,14 +59,16 @@ function ResultPicker({
   )
 }
 
-function ReportForm({ day }: { day: DayDetail }) {
+function ReportForm({ day, autofill }: { day: DayDetail; autofill: AutofillValues }) {
   const me = useMe()
   const submit = useSubmitReport()
   const templates = useSetting<ReportTemplates>('report_templates')
   const groups = templatesFor(teamIds(me), templates)
   const items = activeItems(day.plan!.items)
   const [results, setResults] = useState<Record<string, ItemResult>>({})
-  const [metrics, setMetrics] = useState<Record<string, Record<string, string>>>({})
+  const [metrics, setMetrics] = useState<Record<string, Record<string, string>>>(() =>
+    initialMetrics(groups, autofill),
+  )
   const [blockers, setBlockers] = useState('')
   const [needDecision, setNeedDecision] = useState('')
   const [tomorrowNote, setTomorrowNote] = useState('')
@@ -120,6 +124,9 @@ function ReportForm({ day }: { day: DayDetail }) {
           <legend className="px-1 text-sm font-medium">
             {t.metrics} · {vi.teams[team] ?? team}
           </legend>
+          {fields.some((f) => f.auto) && (
+            <p className="text-xs text-muted-foreground">{vi.checkin.autofill}</p>
+          )}
           <div className="grid grid-cols-2 gap-3">
             {fields.map((f) => (
               <MetricInput
@@ -168,6 +175,14 @@ function ReportForm({ day }: { day: DayDetail }) {
       </Button>
     </div>
   )
+}
+
+/** Chờ số liệu tự điền (check-in, lead, đơn trong ngày) rồi mới hiện form */
+function ReportFormLoader({ day }: { day: DayDetail }) {
+  const autofill = useReportAutofill()
+  if (autofill.isPending)
+    return <p className="text-sm text-muted-foreground">{vi.common.loading}</p>
+  return <ReportForm day={day} autofill={autofill.data ?? {}} />
 }
 
 function MetricInput({
@@ -367,7 +382,7 @@ export function ReportCard({ day }: { day: DayDetail }) {
                 ? t.reportLateWarning(formatTimeVN(day.deadlines.report_deadline))
                 : t.reportDeadline(formatTimeVN(day.deadlines.report_deadline))}
             </p>
-            <ReportForm day={day} />
+            <ReportFormLoader day={day} />
           </>
         )}
         {state === 'missed' && <p className="text-sm text-destructive">{t.reportMissed}</p>}

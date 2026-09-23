@@ -216,3 +216,16 @@ export function useReview() {
     onSuccess: invalidate,
   })
 }
+
+/** Số liệu trong ngày để tự điền báo cáo (Sale: check-in, lead, báo giá, đơn; MKT: lead, chờ duyệt) */
+export function useReportAutofill() {
+  return useQuery({
+    queryKey: ['day', 'autofill'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('fn_report_autofill', {})
+      throwIfError(error)
+      return (data ?? {}) as Record<string, Record<string, number>>
+    },
+    staleTime: 0,
+  })
+}

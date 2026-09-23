@@ -1,6 +1,6 @@
 # Vận hành Mita Workspace
 
-> Tài liệu được bổ sung theo từng milestone. Bản hiện tại: M2.
+> Tài liệu được bổ sung theo từng milestone. Bản hiện tại: M3.
 
 ## Thêm người dùng mới
 1. Đăng nhập bằng tài khoản admin → **Cài đặt → Người dùng → Mời người dùng**.
@@ -41,6 +41,19 @@ Mọi thay đổi được ghi vào nhật ký (audit_log).
 - **Mục tiêu tuần** (`/muc-tieu`): trưởng nhóm/quản lý tạo mục tiêu cho team hoặc 1 người, chọn cách tính thực tế: *Nhập tay*, *Số việc gắn mục tiêu đã xong*; *Doanh số đơn hàng* / *Số lead mới* có số liệu từ M3. Gắn việc vào mục tiêu trong chi tiết việc (ô *Mục tiêu tuần*).
 - Sáng thứ Hai (`weekly_kickoff_time`, mặc định 08:00): hệ thống chốt mục tiêu tuần trước (Đạt/Trượt) và nhắc trưởng nhóm Sale/Marketing chưa lập mục tiêu tuần mới.
 
+## Sales (M3)
+- **Chủ dữ liệu Sales:** admin vào **Cài đặt → Người dùng → Chủ dữ liệu Sales**, chọn Trang. Người này nhận thông báo lead mới chờ phân công và lead quá SLA. Để trống thì mọi trưởng nhóm Sale cùng nhận.
+- **Quyền:** Sale thấy/sửa lead được giao hoặc do mình tạo, khách và đơn của mình (tên khách của người khác vẫn hiện khi kiểm tra trùng). Trưởng nhóm Sale sửa tất cả, phân công, gộp trùng. Quản lý chỉ xem. Marketing tạo lead và chỉ thấy trạng thái lead mình gửi; khi lead đã giao cho Sale thì SĐT/email bị ẩn với Marketing.
+- **Tạo lead:** hệ thống kiểm tra trùng theo SĐT (bỏ khoảng trắng, +84 = 0), email, tên công ty trên toàn bộ lead + khách và cảnh báo trước khi lưu. Hạn liên hệ lần đầu = lúc tạo + `lead_sla_hours` (24h).
+- **Hàng chờ:** lead do Marketing tạo (hoặc Sale bỏ tích *Giao cho tôi*) vào tab *Hàng chờ* của trưởng nhóm Sale để phân công.
+- **Hoạt động:** ghi Gọi/Zalo/Gặp/Gửi mẫu/Báo giá… Hoạt động đầu tiên đánh dấu *đã liên hệ*; Gửi mẫu/Báo giá tự chuyển giai đoạn tương ứng.
+- **Chốt đơn:** nút *Chốt đơn* tạo (hoặc gắn) khách hàng + 1 đơn nháp. *Mất lead* bắt buộc ghi lý do.
+- **Nhắc tự động:** mỗi giờ 8h–18h (`lead_sla_check_hours`) báo lead quá SLA (mỗi lead 1 lần); 08:00 (`followup_time`) nhắc lead có hẹn follow-up hôm nay.
+- **Đơn hàng:** tab *Đơn hàng* – doanh số tháng (đơn *Đã xác nhận* + *Đã giao*) so với `kpi_monthly_revenue_vnd`. Số Sale tự báo, số kế toán là nguồn chuẩn.
+- **Check-in:** `/check-in` → nút lớn *Check-in* → lấy GPS → chụp ảnh (bắt buộc, tự nén ≤1600px) → chọn khách/lead hoặc *Điểm mới* (tạo lead nhanh) → *Lưu*. Ảnh vào Drive `MITA Sales Private/CheckIns/<năm-tháng>`. Check-in tại khách chưa có vị trí sẽ lưu vị trí cho khách (hiện trên bản đồ khách hàng).
+- **Quản lý xem check-in:** `/check-in` → tab *Team*: chọn ngày/người → bản đồ + dòng thời gian, so với *Lịch trình dự kiến* trong kế hoạch sáng.
+- **Báo cáo cuối ngày của Sale** tự điền: số điểm đã gặp (check-in), lead mới, lead đã liên hệ, báo giá đã gửi, đơn chốt, doanh số – vẫn sửa được trước khi nộp.
+
 ## Đổi giờ, ngày lễ, ngày làm bù
 - Giờ hạn chót/nhắc: **Cài đặt → Thông số** (`plan_deadline`, `plan_reminder_time`, `report_open_time`, `report_reminder_time`, `report_deadline`, `report_missed_at`, `summary_evening_time`). Có hiệu lực ngay, không cần sửa gì khác.
 - Thứ làm việc hằng tuần: `workdays` (mặc định `[1,2,3,4,5,6]` = thứ Hai → thứ Bảy).
@@ -61,4 +74,7 @@ Mọi thay đổi được ghi vào nhật ký (audit_log).
 | Không có email nhắc việc | SQL Editor: `select status, last_error from outbox order by created_at desc limit 10;`. `pending` mãi → kiểm tra Vault (`project_url`, `cron_secret`) và function `notify` đã deploy. `failed` + lỗi `unauthorized_client` → domain-wide delegation chưa có hiệu lực/sai Client ID hoặc scope. |
 | Nhắc sai giờ / không nhắc | `select * from cron.job;` phải có `mita-tick`. `select * from cron_runs order by ran_at desc;` xem job đã chạy và lỗi (cột `error`). Giờ trong Thông số là giờ Việt Nam. |
 | Nhân viên bị chặn ở màn Kế hoạch dù đang nghỉ | Nhân viên bấm *Hôm nay tôi nghỉ / đi công tác* ngay trên màn hình đó. Nếu ngày nghỉ đã bị từ chối thì vẫn phải nộp kế hoạch. |
+| Check-in báo "Chưa cấu hình thư mục CheckIns" | Nhập `drive.folders` = `{"checkins": "<ID thư mục>"}` (xem `docs/setup-google.md` mục 2). |
+| Check-in báo lỗi Drive 403/404 | `sale05@mitaexport.com` chưa là *Người quản lý nội dung* của `MITA Sales Private`, hoặc chưa ủy quyền scope `drive` (domain-wide delegation). |
+| Không lấy được GPS | Điện thoại bật Vị trí; trình duyệt cho phép truy cập vị trí cho `work.mitaexport.com` (Safari: Cài đặt → Quyền riêng tư → Dịch vụ định vị → Safari). |
 | Cần sửa báo cáo đã nộp | Không sửa được (chủ ý). Nhân viên thêm *Bổ sung* dưới báo cáo. |

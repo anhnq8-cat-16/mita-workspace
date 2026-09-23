@@ -16,6 +16,14 @@ export type ReportStatus = 'on_time' | 'late' | 'missed'
 export type ReportResult = 'done' | 'partial' | 'not_done'
 export type GoalSource = 'manual' | 'auto_orders' | 'auto_leads' | 'auto_tasks'
 export type GoalStatus = 'open' | 'achieved' | 'missed'
+export type LeadStage =
+  'new' | 'contacted' | 'consulting' | 'sample_sent' | 'quoted' | 'won' | 'lost'
+export type ActivityType =
+  'call' | 'zalo' | 'meeting' | 'visit' | 'email' | 'sample' | 'quote' | 'note'
+export type CustomerType =
+  'cafe' | 'agent' | 'retail_store' | 'corporate_gift' | 'individual' | 'fruit_b2b' | 'other'
+export type CustomerStatus = 'active' | 'inactive'
+export type OrderStatus = 'draft' | 'confirmed' | 'delivered' | 'cancelled'
 
 type Table<Row, Required extends keyof Row = never> = {
   Row: Row
@@ -190,6 +198,131 @@ export type WeeklyGoalProgressRow = Omit<WeeklyGoalRow, 'created_at' | 'updated_
   task_done: number
 }
 
+export type LeadRow = {
+  id: string
+  name: string
+  company: string | null
+  contact_name: string | null
+  phone: string | null
+  phone_norm: string | null
+  email: string | null
+  zalo: string | null
+  address: string | null
+  district: string | null
+  source: string | null
+  segment: string | null
+  product_interest: string[]
+  stage: LeadStage
+  lost_reason: string | null
+  assigned_to: string | null
+  created_by: string | null
+  first_contact_due_at: string
+  first_contacted_at: string | null
+  sla_notified_at: string | null
+  next_follow_up_at: string | null
+  est_value_vnd: number | null
+  notes: string | null
+  customer_id: string | null
+  won_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type LeadActivityRow = {
+  id: string
+  lead_id: string
+  user_id: string | null
+  type: ActivityType
+  content: string | null
+  happened_at: string
+  created_at: string
+  updated_at: string
+}
+
+export type CustomerRow = {
+  id: string
+  name: string
+  type: CustomerType
+  contact_name: string | null
+  phone: string | null
+  phone_norm: string | null
+  email: string | null
+  address: string | null
+  district: string | null
+  lat: number | null
+  lng: number | null
+  owner_id: string | null
+  status: CustomerStatus
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type OrderRow = {
+  id: string
+  customer_id: string
+  sales_id: string | null
+  lead_id: string | null
+  order_date: string
+  total_value_vnd: number
+  items_summary: string | null
+  status: OrderStatus
+  note: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type CheckInRow = {
+  id: string
+  user_id: string
+  customer_id: string | null
+  lead_id: string | null
+  checked_in_at: string
+  lat: number
+  lng: number
+  accuracy_m: number | null
+  photo_drive_file_id: string | null
+  photo_web_link: string | null
+  place_name: string | null
+  note: string | null
+  checked_out_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type LeadDuplicateRow = {
+  kind: 'lead' | 'customer'
+  id: string
+  name: string
+  company: string | null
+  stage: string
+  owner_name: string | null
+  matched: 'phone' | 'email' | 'company'
+}
+
+export type SubmittedLeadRow = {
+  id: string
+  name: string
+  company: string | null
+  stage: LeadStage
+  source: string | null
+  segment: string | null
+  assigned_name: string | null
+  phone: string | null
+  email: string | null
+  created_at: string
+}
+
+export type CustomerDirectoryRow = {
+  id: string
+  name: string
+  district: string | null
+  owner_id: string | null
+  owner_name: string | null
+  lat: number | null
+  lng: number | null
+}
+
 export type DailyPlanRow = {
   id: string
   user_id: string
@@ -327,6 +460,11 @@ export interface Database {
       task_links: Table<TaskLinkRow, 'task_id'>
       task_status_history: Table<TaskStatusHistoryRow, 'task_id' | 'to_status'>
       weekly_goals: Table<WeeklyGoalRow, 'week_start' | 'team_id' | 'title' | 'target'>
+      leads: Table<LeadRow, 'name' | 'first_contact_due_at'>
+      lead_activities: Table<LeadActivityRow, 'lead_id' | 'type'>
+      customers: Table<CustomerRow, 'name'>
+      orders: Table<OrderRow, 'customer_id'>
+      check_ins: Table<CheckInRow, 'lat' | 'lng'>
     }
     Views: { [_ in never]: never }
     Functions: {
@@ -373,6 +511,32 @@ export interface Database {
       }
       fn_team_day: { Args: { p_date?: string | null }; Returns: TeamDayRow[] }
       fn_weekly_goals: { Args: { p_week_start: string }; Returns: WeeklyGoalProgressRow[] }
+      fn_create_lead: { Args: { p: Json; p_force?: boolean }; Returns: Json }
+      fn_find_lead_duplicates: {
+        Args: {
+          p_phone?: string | null
+          p_email?: string | null
+          p_company?: string | null
+          p_exclude?: string | null
+        }
+        Returns: LeadDuplicateRow[]
+      }
+      fn_assign_lead: { Args: { p_lead: string; p_user: string }; Returns: undefined }
+      fn_mark_lead_won: {
+        Args: {
+          p_lead: string
+          p_customer_id?: string | null
+          p_customer?: Json | null
+          p_order_value?: number | null
+          p_items?: string | null
+        }
+        Returns: Json
+      }
+      fn_merge_leads: { Args: { p_keep: string; p_remove: string }; Returns: undefined }
+      fn_merge_customers: { Args: { p_keep: string; p_remove: string }; Returns: undefined }
+      fn_my_submitted_leads: { Args: Record<string, never>; Returns: SubmittedLeadRow[] }
+      fn_customer_directory: { Args: { p_q?: string }; Returns: CustomerDirectoryRow[] }
+      fn_report_autofill: { Args: { p_date?: string | null }; Returns: Json }
     }
     Enums: {
       role_enum: Role
@@ -385,6 +549,11 @@ export interface Database {
       report_result: ReportResult
       goal_source: GoalSource
       goal_status: GoalStatus
+      lead_stage: LeadStage
+      activity_type: ActivityType
+      customer_type: CustomerType
+      customer_status: CustomerStatus
+      order_status: OrderStatus
     }
     CompositeTypes: { [_ in never]: never }
   }

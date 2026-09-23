@@ -13,6 +13,8 @@ import type { Role } from '@/lib/database.types'
 import { formatDateVN } from '@/lib/date-vn'
 import {
   usePendingInvitations,
+  useSetting,
+  useUpdateSetting,
   useRevokeInvitation,
   useSetMembership,
   useTeams,
@@ -156,6 +158,40 @@ function PendingInvites() {
   )
 }
 
+/** Chủ dữ liệu Sales: nhận hàng chờ lead và cảnh báo SLA */
+function SalesOwnerCard() {
+  const users = useUsers()
+  const owner = useSetting<string>('sales_owner_id') ?? ''
+  const update = useUpdateSetting()
+  const sales = (users.data ?? []).filter(
+    (u) => u.is_active && u.teams.some((m) => m.team_id === 'sales_domestic'),
+  )
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{vi.sales.salesOwner}</CardTitle>
+        <p className="text-sm text-muted-foreground">{vi.sales.salesOwnerHint}</p>
+      </CardHeader>
+      <CardContent className="grid gap-2">
+        <Select
+          aria-label={vi.sales.salesOwner}
+          value={owner}
+          disabled={update.isPending}
+          onChange={(e) => update.mutate({ key: 'sales_owner_id', value: e.target.value })}
+        >
+          <option value="">{vi.sales.none}</option>
+          {sales.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.full_name ?? u.email}
+            </option>
+          ))}
+        </Select>
+        <FieldError>{update.error?.message}</FieldError>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function UsersAdmin() {
   const users = useUsers()
   const [filter, setFilter] = useState<Filter>('all')
@@ -169,6 +205,7 @@ export function UsersAdmin() {
     <div className="space-y-4">
       <InviteForm />
       <PendingInvites />
+      <SalesOwnerCard />
       <Card>
         <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle>{t.title}</CardTitle>

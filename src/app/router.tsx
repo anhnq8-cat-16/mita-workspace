@@ -3,11 +3,13 @@ import { AuthCallback } from '@/features/auth/AuthCallback'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
 import { ComingSoon } from '@/features/common/ComingSoon'
+import { CheckInPage } from '@/features/checkin/CheckInPage'
 import { DailyGate } from '@/features/daily/DailyGate'
 import { GoalsPage } from '@/features/goals/GoalsPage'
 import { HomePage } from '@/features/home/HomePage'
 import { DayDetailPage } from '@/features/reports/DayDetailPage'
 import { ReportsPage } from '@/features/reports/ReportsPage'
+import { SalesPage } from '@/features/sales/SalesPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 import { TasksPage } from '@/features/tasks/TasksPage'
 import { AppLayout } from './AppLayout'
@@ -42,7 +44,7 @@ export const router = createBrowserRouter([
             path: 'khach',
             element: (
               <RequireNav navKey="sales">
-                <ComingSoon navKey="sales" milestone="M3" />
+                <SalesPage />
               </RequireNav>
             ),
           },
@@ -50,7 +52,7 @@ export const router = createBrowserRouter([
             path: 'check-in',
             element: (
               <RequireNav navKey="checkin">
-                <ComingSoon navKey="checkin" milestone="M3" />
+                <CheckInPage />
               </RequireNav>
             ),
           },

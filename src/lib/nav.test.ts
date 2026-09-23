@@ -13,9 +13,9 @@ describe('điều hướng theo vai trò', () => {
     expect(keys(bottomTabs(u))).toEqual(['today', 'sales', 'checkin', 'tasks'])
   })
 
-  it('staff Marketing không thấy Khách/Check-in; tab dưới có Việc + Thư viện', () => {
+  it('staff Marketing vào Lead (tạo lead), không thấy Check-in; tab dưới có Việc + Thư viện', () => {
     const u = { role: 'staff' as const, teams: ['marketing'] }
-    expect(canAccess('sales', u)).toBe(false)
+    expect(canAccess('sales', u)).toBe(true)
     expect(canAccess('checkin', u)).toBe(false)
     expect(keys(bottomTabs(u))).toEqual(['today', 'tasks', 'library', 'reports'])
   })
@@ -46,6 +46,7 @@ describe('điều hướng theo vai trò', () => {
   it('xuất khẩu: Thư viện + Sản phẩm', () => {
     const u = { role: 'staff' as const, teams: ['export'] }
     expect(keys(bottomTabs(u))).toEqual(['today', 'tasks', 'library', 'products'])
+    expect(canAccess('sales', u)).toBe(false)
   })
 
   it('navKeyForPath', () => {

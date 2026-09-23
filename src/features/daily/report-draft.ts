@@ -65,3 +65,23 @@ export function normalizeMetrics(
   }
   return out
 }
+
+/** Số liệu tự điền từ fn_report_autofill: { team: { key: số } } */
+export type AutofillValues = Record<string, Record<string, number | null | undefined>>
+
+/** Giá trị ban đầu cho các ô chỉ số có `auto` (người dùng vẫn sửa được) */
+export function initialMetrics(
+  groups: { team: string; fields: MetricField[] }[],
+  autofill: AutofillValues,
+): Record<string, Record<string, string>> {
+  const out: Record<string, Record<string, string>> = {}
+  for (const { team, fields } of groups) {
+    const values: Record<string, string> = {}
+    for (const f of fields) {
+      const v = f.auto ? autofill[team]?.[f.key] : undefined
+      if (v !== undefined && v !== null) values[f.key] = String(v)
+    }
+    out[team] = values
+  }
+  return out
+}

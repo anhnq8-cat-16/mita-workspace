@@ -46,3 +46,12 @@ describe('giờ Việt Nam', () => {
     expect(weekdayVN('2026-09-27T05:00:00Z')).toBe('Chủ nhật')
   })
 })
+
+describe('datetime-local theo giờ VN', () => {
+  it('chuyển qua lại', async () => {
+    const { toVNInputValue, fromVNInputValue } = await import('./date-vn')
+    expect(toVNInputValue('2026-09-30T07:00:00.000Z')).toBe('2026-09-30T14:00')
+    expect(fromVNInputValue('2026-09-30T14:00')).toBe('2026-09-30T07:00:00.000Z')
+    expect(fromVNInputValue('')).toBeNull()
+  })
+})

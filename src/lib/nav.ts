@@ -42,6 +42,8 @@ const inSales = (u: NavUser) => u.teams.includes('sales_domestic')
 export function canAccess(key: NavKey, user: NavUser): boolean {
   switch (key) {
     case 'sales':
+      // Marketing vào để tạo lead và theo dõi trạng thái lead mình gửi
+      return inSales(user) || user.teams.includes('marketing') || isManagerOrAdmin(user)
     case 'checkin':
       return inSales(user) || isManagerOrAdmin(user)
     case 'dashboard':
