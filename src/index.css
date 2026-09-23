@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-background: #fbf8f5;
+  --color-foreground: #2a1d14;
+  --color-card: #ffffff;
+  --color-muted: #f1ebe5;
+  --color-muted-foreground: #74655a;
+  --color-border: #e4dbd2;
+  --color-ring: #9a5b2c;
+  --color-primary: #7a4520;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #efe4d8;
+  --color-secondary-foreground: #4a2f1c;
+  --color-destructive: #c2362b;
+  --color-success: #2e7d4f;
+  --color-warning: #e0a526;
+  --color-warning-foreground: #6b4a00;
+  --font-sans:
+    'Be Vietnam Pro', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  @apply bg-background font-sans text-foreground antialiased;
+}
+
+/* Chừa chỗ cho thanh tab dưới trên iPhone có "tai thỏ" */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
