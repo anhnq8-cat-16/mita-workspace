@@ -889,5 +889,8 @@ export const vi = {
     lastAdmin: 'Không thể khóa hoặc hạ quyền quản trị viên cuối cùng',
     permission: 'Bạn không có quyền thực hiện thao tác này',
     network: 'Không kết nối được máy chủ. Kiểm tra mạng và thử lại.',
+    pageTitle: 'Không mở được trang',
+    pageBody: 'Có thể mạng chập chờn hoặc vừa có bản cập nhật. Tải lại trang để thử lại.',
+    reload: 'Tải lại trang',
   },
 } as const

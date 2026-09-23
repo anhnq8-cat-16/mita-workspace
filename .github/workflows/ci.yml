@@ -74,7 +74,16 @@ jobs:
         with:
           version: latest
       - name: Start Supabase (Postgres + Auth thật)
-        run: supabase db start
+        # Registry image đôi khi giới hạn lượt tải (toomanyrequests) → thử lại tối đa 3 lần
+        run: |
+          n=0
+          until supabase db start; do
+            n=$((n+1))
+            if [ "$n" -ge 3 ]; then exit 1; fi
+            echo "Khởi động Supabase lỗi, thử lại lần $((n+1)) sau $((n*30)) giây…"
+            supabase stop --no-backup || true
+            sleep $((n*30))
+          done
         env:
           SUPABASE_AUTH_GOOGLE_CLIENT_ID: ci
           SUPABASE_AUTH_GOOGLE_SECRET: ci

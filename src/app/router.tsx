@@ -23,12 +23,14 @@ import {
 } from './lazy-pages'
 import { LibraryLayout } from './LibraryLayout'
 import { RequireNav } from './RequireNav'
+import { RouteError } from './RouteError'
 
 // Trang Hôm nay + cổng kế hoạch tải ngay; các trang khác tải khi mở (xem lazy-pages.ts)
 export const router = createBrowserRouter([
   { path: '/dang-nhap', element: <LoginPage /> },
   { path: '/auth/callback', element: <AuthCallback /> },
   {
+    errorElement: <RouteError />,
     element: (
       <RequireAuth>
         <DailyGate>
@@ -54,6 +56,7 @@ export const router = createBrowserRouter([
       },
       {
         element: <AppLayout />,
+        errorElement: <RouteError />,
         children: [
           { index: true, element: <HomePage /> },
           { path: 'viec', element: <TasksPage /> },
