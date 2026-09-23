@@ -68,11 +68,16 @@ jobs:
   database:
     name: Migrations + RLS tests (Supabase)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
         with:
           version: latest
+      - name: Đăng nhập ghcr.io (tải ẩn danh image Supabase bị giới hạn lượt)
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
       - name: Start Supabase (Postgres + Auth thật)
         # Registry image đôi khi giới hạn lượt tải (toomanyrequests) → thử lại tối đa 3 lần
         run: |
