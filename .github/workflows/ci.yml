@@ -1,9 +1,11 @@
 name: CI
 
+# Chạy khi push lên mọi nhánh (repo hiện chỉ có nhánh phát triển), khi mở PR, hoặc bấm tay.
 on:
   push:
-    branches: [main]
+    branches: ['**']
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
