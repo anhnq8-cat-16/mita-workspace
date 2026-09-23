@@ -14,6 +14,8 @@ export type TaskPriority = 'low' | 'normal' | 'high' | 'urgent'
 export type PlanItemKind = 'task' | 'visit' | 'meeting' | 'content' | 'other'
 export type ReportStatus = 'on_time' | 'late' | 'missed'
 export type ReportResult = 'done' | 'partial' | 'not_done'
+export type GoalSource = 'manual' | 'auto_orders' | 'auto_leads' | 'auto_tasks'
+export type GoalStatus = 'open' | 'achieved' | 'missed'
 
 type Table<Row, Required extends keyof Row = never> = {
   Row: Row
@@ -124,6 +126,68 @@ export type TaskRow = {
   blocked_reason: string | null
   created_at: string
   updated_at: string
+}
+
+export type TaskChecklistItemRow = {
+  id: string
+  task_id: string
+  text: string
+  done: boolean
+  position: number
+  created_at: string
+  updated_at: string
+}
+
+export type TaskCommentRow = {
+  id: string
+  task_id: string
+  author_id: string
+  body: string
+  mentions: string[]
+  created_at: string
+  updated_at: string
+}
+
+export type TaskLinkRow = {
+  id: string
+  task_id: string
+  library_item_id: string | null
+  url: string | null
+  label: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type TaskStatusHistoryRow = {
+  id: string
+  task_id: string
+  from_status: TaskStatus | null
+  to_status: TaskStatus
+  changed_by: string | null
+  changed_at: string
+}
+
+export type WeeklyGoalRow = {
+  id: string
+  week_start: string
+  team_id: string
+  owner_id: string | null
+  title: string
+  metric: string | null
+  target: number
+  unit: string | null
+  actual: number | null
+  actual_source: GoalSource
+  status: GoalStatus
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type WeeklyGoalProgressRow = Omit<WeeklyGoalRow, 'created_at' | 'updated_at'> & {
+  task_total: number
+  task_done: number
 }
 
 export type DailyPlanRow = {
@@ -258,6 +322,11 @@ export interface Database {
       daily_reports: Table<DailyReportRow, 'user_id' | 'report_date' | 'status'>
       daily_report_items: Table<DailyReportItemRow, 'report_id' | 'result'>
       report_amendments: Table<ReportAmendmentRow, 'report_id' | 'body'>
+      task_checklist_items: Table<TaskChecklistItemRow, 'task_id' | 'text'>
+      task_comments: Table<TaskCommentRow, 'task_id' | 'body'>
+      task_links: Table<TaskLinkRow, 'task_id'>
+      task_status_history: Table<TaskStatusHistoryRow, 'task_id' | 'to_status'>
+      weekly_goals: Table<WeeklyGoalRow, 'week_start' | 'team_id' | 'title' | 'target'>
     }
     Views: { [_ in never]: never }
     Functions: {
@@ -303,6 +372,7 @@ export interface Database {
         Returns: undefined
       }
       fn_team_day: { Args: { p_date?: string | null }; Returns: TeamDayRow[] }
+      fn_weekly_goals: { Args: { p_week_start: string }; Returns: WeeklyGoalProgressRow[] }
     }
     Enums: {
       role_enum: Role
@@ -313,6 +383,8 @@ export interface Database {
       plan_item_kind: PlanItemKind
       report_status: ReportStatus
       report_result: ReportResult
+      goal_source: GoalSource
+      goal_status: GoalStatus
     }
     CompositeTypes: { [_ in never]: never }
   }

@@ -4,10 +4,12 @@ import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
 import { ComingSoon } from '@/features/common/ComingSoon'
 import { DailyGate } from '@/features/daily/DailyGate'
+import { GoalsPage } from '@/features/goals/GoalsPage'
 import { HomePage } from '@/features/home/HomePage'
 import { DayDetailPage } from '@/features/reports/DayDetailPage'
 import { ReportsPage } from '@/features/reports/ReportsPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
+import { TasksPage } from '@/features/tasks/TasksPage'
 import { AppLayout } from './AppLayout'
 import { LibraryLayout } from './LibraryLayout'
 import { RequireNav } from './RequireNav'
@@ -34,8 +36,8 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { index: true, element: <HomePage /> },
-          { path: 'viec', element: <ComingSoon navKey="tasks" milestone="M2" /> },
-          { path: 'muc-tieu', element: <ComingSoon navKey="goals" milestone="M2" /> },
+          { path: 'viec', element: <TasksPage /> },
+          { path: 'muc-tieu', element: <GoalsPage /> },
           {
             path: 'khach',
             element: (

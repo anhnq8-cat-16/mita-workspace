@@ -1,6 +1,6 @@
 # Vận hành Mita Workspace
 
-> Tài liệu được bổ sung theo từng milestone. Bản hiện tại: M1.
+> Tài liệu được bổ sung theo từng milestone. Bản hiện tại: M2.
 
 ## Thêm người dùng mới
 1. Đăng nhập bằng tài khoản admin → **Cài đặt → Người dùng → Mời người dùng**.
@@ -29,6 +29,17 @@ Mọi thay đổi được ghi vào nhật ký (audit_log).
 - **Việc tồn:** việc *Một phần / Chưa làm* (hoặc cả kế hoạch nếu hôm đó bỏ lỡ báo cáo) tự hiện ở kế hoạch ngày làm việc tiếp theo; muốn bỏ phải ghi lý do.
 - **Nghỉ:** nhân viên khai báo ở cổng kế hoạch hoặc **Báo cáo → Nghỉ phép**; khai báo xong là vào app được ngay. Trưởng nhóm/quản lý duyệt hoặc từ chối ở **Báo cáo → Team**. Chỉ ngày nghỉ **đã duyệt** mới không bị tính vào điểm tuân thủ (M5).
 - **Xem & phản hồi:** trưởng nhóm/quản lý vào **Báo cáo → Team**, chọn ngày, bấm vào từng người → *Đã xem* + phản hồi (nhân viên nhận thông báo).
+
+## Công việc & mục tiêu tuần (M2)
+- **Bảng Kanban** (`/viec`): 5 cột Cần làm · Đang làm · Chờ duyệt · Hoàn thành · Bị chặn. Kéo thẻ để đổi trạng thái (trên điện thoại: giữ ngón tay ~0,3 giây rồi kéo). Thay đổi của người khác hiện ngay không cần tải lại.
+- Chế độ xem: Bảng, Danh sách, Việc của tôi, Theo người (trưởng nhóm/quản lý), Lịch (theo hạn). Lọc theo team, người, mục tiêu, ưu tiên, quá hạn. Việc quá hạn có viền đỏ và số ngày trễ.
+- **Duyệt việc:** khi `task_require_review` = `true`, nhân viên chỉ kéo được đến *Chờ duyệt*; trưởng nhóm/quản lý mở việc → *Duyệt → Hoàn thành* hoặc *Trả lại*. Tắt duyệt: đặt `false` trong Thông số.
+- **Việc nhạy cảm** (ví dụ đánh giá hiệu suất cá nhân): trưởng nhóm/quản lý tích *Việc nhạy cảm* khi tạo/sửa. Chỉ người được giao, người giao, trưởng nhóm team và quản lý xem được; @nhắc tên người khác cũng không gửi thông báo cho họ.
+- **Giao việc hàng loạt:** nút *Giao việc* → chọn team, chọn nhiều người, nhập nhiều dòng việc → tạo mỗi việc cho từng người.
+- **Bình luận:** gõ `@` để chọn người cần nhắc; người đó nhận thông báo (chuông + email).
+- Việc *Hoàn thành* chỉ hiện trên bảng 30 ngày; cũ hơn vẫn được lưu.
+- **Mục tiêu tuần** (`/muc-tieu`): trưởng nhóm/quản lý tạo mục tiêu cho team hoặc 1 người, chọn cách tính thực tế: *Nhập tay*, *Số việc gắn mục tiêu đã xong*; *Doanh số đơn hàng* / *Số lead mới* có số liệu từ M3. Gắn việc vào mục tiêu trong chi tiết việc (ô *Mục tiêu tuần*).
+- Sáng thứ Hai (`weekly_kickoff_time`, mặc định 08:00): hệ thống chốt mục tiêu tuần trước (Đạt/Trượt) và nhắc trưởng nhóm Sale/Marketing chưa lập mục tiêu tuần mới.
 
 ## Đổi giờ, ngày lễ, ngày làm bù
 - Giờ hạn chót/nhắc: **Cài đặt → Thông số** (`plan_deadline`, `plan_reminder_time`, `report_open_time`, `report_reminder_time`, `report_deadline`, `report_missed_at`, `summary_evening_time`). Có hiệu lực ngay, không cần sửa gì khác.

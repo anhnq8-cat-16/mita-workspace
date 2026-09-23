@@ -6,6 +6,7 @@
 **Trạng thái:**
 - M0 Nền tảng: đăng nhập Google, lời mời/kích hoạt, phân quyền, layout theo vai trò.
 - M1 Kỷ luật ngày: cổng kế hoạch ngày, báo cáo cuối ngày + bổ sung, review, nghỉ phép, ngày lễ/ngày làm bù, chuyển việc tồn, nhắc việc & tóm tắt tự động (email Gmail API + Google Chat).
+- M2 Công việc & mục tiêu: Kanban kéo-thả realtime (5 chế độ xem, bộ lọc), chi tiết việc (Markdown, checklist, bình luận @nhắc tên, link tư liệu, lịch sử), việc nhạy cảm, giao việc hàng loạt, mục tiêu tuần.
 
 ## Công nghệ
 React + Vite + TypeScript (strict), Tailwind CSS, TanStack Query, react-hook-form + zod · Supabase (Postgres + RLS, Auth Google, Realtime, Edge Functions, pg_cron) · Cloudflare Pages · GitHub Actions.
@@ -50,7 +51,7 @@ npx deno test supabase/functions/_shared   # test Edge Functions (Deno)
 ```
 
 ### Lịch tự động hoạt động thế nào
-`pg_cron` gọi `public.fn_cron_tick()` mỗi phút. Hàm này so giờ Việt Nam với các mốc trong `settings`, chạy mỗi job (`remind_plan`, `summary_morning`, `remind_report`, `summary_evening`, `close_day`) đúng 1 lần/ngày (ghi vào `cron_runs`), tạo thông báo trong app và đưa email/Google Chat vào bảng `outbox`. Sau đó gọi Edge Function `notify` (qua `pg_net`) để gửi.
+`pg_cron` gọi `public.fn_cron_tick()` mỗi phút. Hàm này so giờ Việt Nam với các mốc trong `settings`, chạy mỗi job (`remind_plan`, `summary_morning`, `remind_report`, `summary_evening`, `close_day`; thứ Hai thêm `weekly_kickoff`) đúng 1 lần/ngày (ghi vào `cron_runs`), tạo thông báo trong app và đưa email/Google Chat vào bảng `outbox`. Sau đó gọi Edge Function `notify` (qua `pg_net`) để gửi.
 Khác SPEC một chút: logic job nằm trong SQL thay cho Edge Function `cron-runner`, để test được bằng pgTAP (giả lập giờ qua `app.now`) và đổi giờ trong Cài đặt không cần sửa cron.
 
 ## Deploy (lần đầu)
