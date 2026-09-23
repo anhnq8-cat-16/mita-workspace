@@ -8,6 +8,7 @@
 - M1 Kỷ luật ngày: cổng kế hoạch ngày, báo cáo cuối ngày + bổ sung, review, nghỉ phép, ngày lễ/ngày làm bù, chuyển việc tồn, nhắc việc & tóm tắt tự động (email Gmail API + Google Chat).
 - M4 Thư viện & sản phẩm: upload resumable lên Shared Drive (tiến độ, hủy, file lớn), duyệt + tự chuyển thư mục đích, ảnh thu nhỏ có kiểm tra quyền, YouTube, `/thu-vien` độc lập; sản phẩm + bảng giá (sửa hàng loạt, lịch sử giá, in/PDF), 37 sản phẩm seed (giá để trống).
 - M3 Sales: lead (kiểm tra trùng, SLA, hàng chờ, phân công, pipeline kéo-thả, hoạt động, chốt/mất, gộp trùng), khách hàng + bản đồ, đơn hàng + KPI tháng, check-in GPS + ảnh lên Drive, báo cáo Sale tự điền.
+- M5 Dashboard & tuân thủ: `/quan-ly` 6 khối (từng người, chờ xử lý, điểm tuân thủ + xu hướng 4 tuần, Sales, mục tiêu tuần, bản đồ check-in), xuất CSV, leo thang tự động (việc gặp 1-1), email điểm tuần + báo cáo tuần thứ Hai.
 - M2 Công việc & mục tiêu: Kanban kéo-thả realtime (5 chế độ xem, bộ lọc), chi tiết việc (Markdown, checklist, bình luận @nhắc tên, link tư liệu, lịch sử), việc nhạy cảm, giao việc hàng loạt, mục tiêu tuần.
 
 ## Công nghệ
@@ -53,7 +54,7 @@ npx deno test supabase/functions/_shared   # test Edge Functions (Deno)
 ```
 
 ### Lịch tự động hoạt động thế nào
-`pg_cron` gọi `public.fn_cron_tick()` mỗi phút. Hàm này so giờ Việt Nam với các mốc trong `settings`, chạy mỗi job (`remind_plan`, `summary_morning`, `remind_report`, `summary_evening`, `close_day`; thứ Hai thêm `weekly_kickoff`; mỗi giờ `lead_sla_check`; sáng `followup_due`) đúng 1 lần/ngày (ghi vào `cron_runs`), tạo thông báo trong app và đưa email/Google Chat vào bảng `outbox`. Sau đó gọi Edge Function `notify` (qua `pg_net`) để gửi.
+`pg_cron` gọi `public.fn_cron_tick()` mỗi phút. Hàm này so giờ Việt Nam với các mốc trong `settings`, chạy mỗi job (`remind_plan`, `summary_morning`, `remind_report`, `summary_evening`, `close_day`; thứ Hai thêm `weekly_report`, `weekly_kickoff`; mỗi giờ `lead_sla_check`; sáng `followup_due`) đúng 1 lần/ngày (ghi vào `cron_runs`), tạo thông báo trong app và đưa email/Google Chat vào bảng `outbox`. Sau đó gọi Edge Function `notify` (qua `pg_net`) để gửi.
 Khác SPEC một chút: logic job nằm trong SQL thay cho Edge Function `cron-runner`, để test được bằng pgTAP (giả lập giờ qua `app.now`) và đổi giờ trong Cài đặt không cần sửa cron.
 
 ## Deploy (lần đầu)

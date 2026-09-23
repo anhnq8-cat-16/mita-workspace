@@ -2,9 +2,9 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 import { AuthCallback } from '@/features/auth/AuthCallback'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
-import { ComingSoon } from '@/features/common/ComingSoon'
 import { CheckInPage } from '@/features/checkin/CheckInPage'
 import { DailyGate } from '@/features/daily/DailyGate'
+import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { GoalsPage } from '@/features/goals/GoalsPage'
 import { HomePage } from '@/features/home/HomePage'
 import { LibraryPage } from '@/features/library/LibraryPage'
@@ -71,7 +71,7 @@ export const router = createBrowserRouter([
             path: 'quan-ly',
             element: (
               <RequireNav navKey="dashboard">
-                <ComingSoon navKey="dashboard" milestone="M5" />
+                <DashboardPage />
               </RequireNav>
             ),
           },

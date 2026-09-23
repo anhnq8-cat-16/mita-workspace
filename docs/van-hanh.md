@@ -1,6 +1,6 @@
 # Vận hành Mita Workspace
 
-> Tài liệu được bổ sung theo từng milestone. Bản hiện tại: M4.
+> Tài liệu được bổ sung theo từng milestone. Bản hiện tại: M5.
 
 ## Thêm người dùng mới
 1. Đăng nhập bằng tài khoản admin → **Cài đặt → Người dùng → Mời người dùng**.
@@ -63,6 +63,34 @@ Mọi thay đổi được ghi vào nhật ký (audit_log).
 - **Bảng giá PDF:** *Xuất bảng giá PDF* → *In / Lưu PDF* → chọn máy in "Lưu dưới dạng PDF". Ngày hiệu lực = ngày in; ghi chú cuối trang sửa ở `price_list_note`.
 - Gắn tư liệu vào công việc: trong chi tiết việc → *Tư liệu* → *Gắn tư liệu từ thư viện…*.
 
+## Dashboard quản lý & điểm tuân thủ (M5)
+- **Mở:** menu **Quản lý** (`/quan-ly`) – trưởng nhóm, quản lý, admin. Nhân viên không mở được. Chọn *Ngày / Tuần / Tháng*, mũi tên để lùi/tiến kỳ, lọc theo team. Kỳ đang xem nằm trên địa chỉ trang (ví dụ `/quan-ly?mode=week&date=2026-10-05`) nên gửi link là người nhận thấy đúng kỳ đó.
+- **6 khối:** (1) từng người trong ngày – bấm tên để xem kế hoạch/báo cáo chi tiết; (2) *Chờ tôi xử lý* – kế hoạch/báo cáo chưa xem (7 ngày gần nhất), cần quyết định, việc chờ duyệt, nghỉ chờ duyệt, tư liệu chờ duyệt, leo thang; (3) điểm tuân thủ + xu hướng 4 tuần; (4) Sales – chỉ quản lý, admin, trưởng nhóm Sale; (5) mục tiêu tuần; (6) bản đồ check-in. Mỗi khối có nút **CSV** (mở được bằng Excel, tiếng Việt không lỗi font).
+- Trưởng nhóm chỉ thấy người trong team mình; quản lý/admin thấy tất cả. Nhân viên xem điểm của chính mình ở **Báo cáo → Của tôi**.
+
+### Cách tính điểm tuân thủ (0–100)
+| Thành phần | Trọng số mặc định | Cách tính |
+|---|---|---|
+| Kế hoạch | 30 | % ngày nộp kế hoạch **đúng giờ** |
+| Báo cáo | 30 | Đúng giờ = 100, Trễ = 50, Bỏ lỡ = 0; lấy trung bình |
+| Việc đúng hạn | 30 | % việc có hạn trong kỳ được *Hoàn thành* không muộn hơn hạn |
+| Trong kế hoạch | 10 | 100 − 2 × % mục *Ngoài kế hoạch* (thấp nhất 0) |
+
+- Chỉ tính **ngày làm việc** của người đó (thứ làm việc + ngày làm bù của team, trừ ngày lễ), từ ngày tài khoản được kích hoạt, **trừ ngày nghỉ đã duyệt** (nghỉ chờ duyệt vẫn bị tính).
+- Hôm nay: kế hoạch tính khi đã qua `plan_deadline`; báo cáo và việc đến hạn hôm nay chỉ tính khi hết ngày.
+- Thành phần không có dữ liệu (ví dụ không có việc nào đến hạn) được bỏ qua, điểm chia theo trọng số còn lại.
+- Màu: **xanh ≥ 90 · vàng 70–89 · đỏ < 70**, luôn kèm chữ *Tốt / Cần chú ý / Thấp*. Đổi ngưỡng: `compliance_bands`; đổi trọng số: `compliance_weights`.
+
+### Leo thang (chạy lúc chốt ngày, `report_missed_at`)
+- Đếm vi phạm trong tháng = số lần kế hoạch Trễ + báo cáo Trễ + báo cáo Bỏ lỡ (ngày được tính như trên).
+- **Cấp 1** (mặc định 3 lần): tạo việc *Gặp 1-1 với <tên>* (ưu tiên cao, **việc nhạy cảm**, hạn 2 ngày) giao cho trưởng nhóm của người đó (không có trưởng nhóm → quản lý); người vi phạm nhận thông báo.
+- **Cấp 2** (mặc định 5 lần): thông báo + email cho quản lý/admin.
+- Mỗi cấp tối đa 1 lần/người/tháng. Sau khi gặp: khối *Chờ tôi xử lý* → *Đã xử lý* → ghi kết quả. Đổi ngưỡng: `escalation_thresholds`.
+
+### Email tự động thứ Hai
+- `weekly_kickoff_time` (08:00): mỗi người nhận điểm tuân thủ tuần trước (chuông + email).
+- `weekly_report_time` (07:30): quản lý/admin nhận **báo cáo tuần** – doanh số tuần, doanh số tháng đến nay so KPI, lead (mới, đúng SLA, chốt, mất, đang quá SLA), điểm từng người, mục tiêu tuần – kèm link mở dashboard đúng tuần đó.
+
 ## Đổi giờ, ngày lễ, ngày làm bù
 - Giờ hạn chót/nhắc: **Cài đặt → Thông số** (`plan_deadline`, `plan_reminder_time`, `report_open_time`, `report_reminder_time`, `report_deadline`, `report_missed_at`, `summary_evening_time`). Có hiệu lực ngay, không cần sửa gì khác.
 - Thứ làm việc hằng tuần: `workdays` (mặc định `[1,2,3,4,5,6]` = thứ Hai → thứ Bảy).
@@ -88,4 +116,7 @@ Mọi thay đổi được ghi vào nhật ký (audit_log).
 | Thư viện không hiện ảnh thu nhỏ | Drive cần vài phút tạo ảnh thu nhỏ cho file mới; file thiết kế (AI, PSD) có thể không có ảnh thu nhỏ. |
 | Check-in báo lỗi Drive 403/404 | `sale05@mitaexport.com` chưa là *Người quản lý nội dung* của `MITA Sales Private`, hoặc chưa ủy quyền scope `drive` (domain-wide delegation). |
 | Không lấy được GPS | Điện thoại bật Vị trí; trình duyệt cho phép truy cập vị trí cho `work.mitaexport.com` (Safari: Cài đặt → Quyền riêng tư → Dịch vụ định vị → Safari). |
+| Dashboard: điểm của 1 người trông sai | Mở **Báo cáo → Team → chọn ngày → bấm tên** để xem từng ngày (Trễ/Bỏ lỡ/Nghỉ). Ngày nghỉ chưa được duyệt vẫn bị tính. Kiểm tra `workdays`, ngày lễ, ngày làm bù. |
+| Không thấy khối Sales trên dashboard | Chỉ quản lý, admin và trưởng nhóm Sale xem được. |
+| Không có email báo cáo tuần | `select * from cron_runs where job = 'weekly_report' order by ran_at desc;` rồi kiểm tra `outbox` như dòng *Không có email nhắc việc*. |
 | Cần sửa báo cáo đã nộp | Không sửa được (chủ ý). Nhân viên thêm *Bổ sung* dưới báo cáo. |

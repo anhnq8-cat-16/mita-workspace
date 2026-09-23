@@ -29,6 +29,115 @@ export type LibraryKind = 'image' | 'video' | 'document' | 'design' | 'youtube'
 export type SharedDriveKind = 'library' | 'sales_private'
 export type LibraryStatus = 'pending' | 'approved' | 'rejected'
 
+export type EscalationRow = {
+  id: string
+  user_id: string
+  period_month: string
+  level: 1 | 2
+  reason: string
+  task_id: string | null
+  resolved_by: string | null
+  resolved_at: string | null
+  resolved_note: string | null
+  created_at: string
+  updated_at: string
+}
+
+/** Kết quả fn_compliance_score / cột detail của fn_compliance_scores (null = không có dữ liệu để tính) */
+export type ComplianceDetail = {
+  score: number | null
+  plan: number | null
+  report: number | null
+  tasks: number | null
+  off_plan: number | null
+  plan_days: number
+  report_days: number
+  tasks_due: number
+  tasks_done_on_time: number
+  plan_items: number
+  off_plan_items: number
+}
+
+export type ComplianceScoreRow = {
+  user_id: string
+  full_name: string | null
+  email: string
+  avatar_url: string | null
+  teams: string[]
+  score: number | null
+  plan: number | null
+  report: number | null
+  tasks: number | null
+  off_plan: number | null
+  detail: ComplianceDetail
+}
+
+export type ComplianceTrendRow = { user_id: string; week_start: string; score: number | null }
+
+export type DashboardPersonRow = {
+  user_id: string
+  full_name: string | null
+  email: string
+  avatar_url: string | null
+  role: Role
+  teams: string[]
+  plan_required: boolean
+  leave_type: LeaveType | null
+  leave_approved: boolean
+  plan_id: string | null
+  plan_submitted_at: string | null
+  plan_is_late: boolean | null
+  plan_reviewed_at: string | null
+  report_id: string | null
+  report_status: ReportStatus | null
+  report_submitted_at: string | null
+  report_reviewed_at: string | null
+  tasks_due: number
+  tasks_overdue: number
+  last_checkin_at: string | null
+  last_checkin_place: string | null
+  checkins: number
+}
+
+export type DashboardInbox = {
+  plans: { id: string; user_id: string; name: string; date: string; is_late: boolean }[]
+  reports: { id: string; user_id: string; name: string; date: string; status: ReportStatus }[]
+  decisions: { id: string; user_id: string; name: string; date: string; text: string }[]
+  tasks_review: {
+    id: string
+    title: string
+    assignee_id: string | null
+    name: string | null
+    due_date: string | null
+  }[]
+  library_pending: number
+  leaves_pending: { id: string; user_id: string; name: string; date: string; type: LeaveType }[]
+  escalations: {
+    id: string
+    user_id: string
+    name: string
+    level: 1 | 2
+    reason: string
+    period_month: string
+    task_id: string | null
+  }[]
+}
+
+export type SalesSummary = {
+  new_leads: number
+  contacted_in_sla: number
+  sla_due: number
+  overdue_now: number
+  won: number
+  lost: number
+  revenue: number
+  revenue_month: number
+  kpi_month: number
+  pipeline: { stage: LeadStage; count: number; value: number }[]
+  lost_reasons: { reason: string | null; count: number }[]
+  by_source: { source: string; count: number }[]
+}
+
 type Table<Row, Required extends keyof Row = never> = {
   Row: Row
   Insert: Partial<Row> & Pick<Row, Required>
@@ -527,6 +636,7 @@ export interface Database {
       products: Table<ProductRow, 'sku' | 'name' | 'category'>
       product_price_history: Table<ProductPriceHistoryRow, 'product_id'>
       library_items: Table<LibraryItemRow, 'title' | 'kind'>
+      escalations: Table<EscalationRow, 'user_id' | 'period_month' | 'level' | 'reason'>
     }
     Views: { [_ in never]: never }
     Functions: {
@@ -600,6 +710,22 @@ export interface Database {
       fn_customer_directory: { Args: { p_q?: string }; Returns: CustomerDirectoryRow[] }
       fn_report_autofill: { Args: { p_date?: string | null }; Returns: Json }
       fn_can_approve_library: { Args: { p_drive: SharedDriveKind }; Returns: boolean }
+      fn_compliance_score: {
+        Args: { p_user: string; p_from: string; p_to: string }
+        Returns: ComplianceDetail
+      }
+      fn_compliance_scores: {
+        Args: { p_from: string; p_to: string }
+        Returns: ComplianceScoreRow[]
+      }
+      fn_compliance_trend: {
+        Args: { p_weeks?: number; p_end?: string | null }
+        Returns: ComplianceTrendRow[]
+      }
+      fn_dashboard_people: { Args: { p_date?: string | null }; Returns: DashboardPersonRow[] }
+      fn_dashboard_inbox: { Args: Record<string, never>; Returns: DashboardInbox }
+      fn_dashboard_sales: { Args: { p_from: string; p_to: string }; Returns: SalesSummary }
+      fn_resolve_escalation: { Args: { p_id: string; p_note: string }; Returns: undefined }
     }
     Enums: {
       role_enum: Role

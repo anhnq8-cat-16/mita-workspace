@@ -11,7 +11,8 @@ import { Tabs } from '@/components/ui/tabs'
 import { useMe } from '@/features/auth/auth-context'
 import { PlanBadge, ReportBadge } from '@/features/daily/badges'
 import { LeaveForm } from '@/features/daily/LeaveForm'
-import { useUsers } from '@/features/settings/api'
+import { MyComplianceCard } from '@/features/dashboard/MyComplianceCard'
+import { useSetting, useUsers } from '@/features/settings/api'
 import { vi } from '@/i18n/vi'
 import type { LeaveRow, ReportStatus } from '@/lib/database.types'
 import { formatDateVN, todayVN, weekdayVN } from '@/lib/date-vn'
@@ -47,42 +48,46 @@ function RowLink({ to, children }: { to: string; children: React.ReactNode }) {
 function MineTab() {
   const me = useMe()
   const history = useMyHistory(me.id)
+  const scored = useSetting<string[]>('plan_required_roles') ?? ['lead', 'staff']
   return (
-    <Card>
-      <CardContent className="p-0">
-        {history.isPending && (
-          <div className="flex justify-center p-6">
-            <Spinner />
-          </div>
-        )}
-        {history.error && <ErrorBox error={history.error} />}
-        {history.data?.length === 0 && (
-          <p className="p-6 text-center text-sm text-muted-foreground">{t.noHistory}</p>
-        )}
-        <ul>
-          {history.data?.map((row) => (
-            <RowLink key={row.date} to={`/bao-cao/${me.id}/${row.date}`}>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">
-                  {weekdayVN(`${row.date}T05:00:00Z`)}, {formatDateVN(row.date)}
-                </p>
-                <div className="mt-1 flex flex-wrap gap-1.5">
-                  <PlanBadge prefix submitted={Boolean(row.plan)} isLate={row.plan?.is_late} />
-                  <ReportBadge
-                    prefix
-                    submitted={Boolean(row.report?.submitted_at)}
-                    status={row.report?.status as ReportStatus | undefined}
-                  />
-                  {(row.plan?.reviewed_at || row.report?.reviewed_at) && (
-                    <Badge variant="outline">{vi.daily.reviewed}</Badge>
-                  )}
+    <div className="grid gap-4">
+      {scored.includes(me.role) && <MyComplianceCard userId={me.id} />}
+      <Card>
+        <CardContent className="p-0">
+          {history.isPending && (
+            <div className="flex justify-center p-6">
+              <Spinner />
+            </div>
+          )}
+          {history.error && <ErrorBox error={history.error} />}
+          {history.data?.length === 0 && (
+            <p className="p-6 text-center text-sm text-muted-foreground">{t.noHistory}</p>
+          )}
+          <ul>
+            {history.data?.map((row) => (
+              <RowLink key={row.date} to={`/bao-cao/${me.id}/${row.date}`}>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">
+                    {weekdayVN(`${row.date}T05:00:00Z`)}, {formatDateVN(row.date)}
+                  </p>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    <PlanBadge prefix submitted={Boolean(row.plan)} isLate={row.plan?.is_late} />
+                    <ReportBadge
+                      prefix
+                      submitted={Boolean(row.report?.submitted_at)}
+                      status={row.report?.status as ReportStatus | undefined}
+                    />
+                    {(row.plan?.reviewed_at || row.report?.reviewed_at) && (
+                      <Badge variant="outline">{vi.daily.reviewed}</Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </RowLink>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+              </RowLink>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
 
