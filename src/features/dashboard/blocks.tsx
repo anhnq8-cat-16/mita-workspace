@@ -1,8 +1,18 @@
-import { ChevronRight, ExternalLink } from 'lucide-react'
+import {
+  ChevronRight,
+  CircleSlash,
+  ExternalLink,
+  Funnel,
+  Gauge,
+  Inbox,
+  MapPin,
+  Target,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { MapView } from '@/components/MapView'
 import { Avatar } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/input'
 import { ErrorBox, Spinner } from '@/components/ui/spinner'
@@ -12,9 +22,15 @@ import { useWeeklyGoals } from '@/features/goals/api'
 import { goalPercent } from '@/features/goals/goal-math'
 import { useUsers } from '@/features/settings/api'
 import { vi } from '@/i18n/vi'
-import type { ComplianceScoreRow, DashboardPersonRow } from '@/lib/database.types'
+import type {
+  ComplianceScoreRow,
+  ComplianceTrendRow,
+  DashboardPersonRow,
+  SalesSummary,
+} from '@/lib/database.types'
 import { formatDateVN, formatTimeVN } from '@/lib/date-vn'
 import { formatNumber, formatVND } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { addDays, weekStart } from '@/lib/week'
 import {
   useBands,
@@ -26,9 +42,22 @@ import {
   useSalesSummary,
   useWeights,
 } from './api'
+import { compactVND, cumulativeRevenue, STATUS } from './chart-theme'
 import { formatScore, ratio, scoreBand } from './compliance'
 import { planText, reportText, teamNames } from './labels'
-import { BarList, Block, CsvButton, ProgressBar, ScoreBadge, Sparkline, Stat } from './parts'
+import {
+  BentoCard,
+  CsvButton,
+  HBarChart,
+  KpiTile,
+  MiniArea,
+  ProgressBar,
+  RevenueChart,
+  Ring,
+  ScoreBadge,
+  Sparkline,
+  StatusBar,
+} from './parts'
 import type { Period } from './period'
 
 const t = vi.dashboard
@@ -46,23 +75,156 @@ function Loading({ error, pending }: { error: unknown; pending: boolean }) {
 
 const name = (r: { full_name: string | null; email: string }) => r.full_name ?? r.email
 
+/** Điểm trung bình team theo tuần (bỏ qua người chưa có điểm) */
+function teamAverage(rows: ComplianceTrendRow[], users: Set<string> | null) {
+  const weeks = [...new Set(rows.map((r) => r.week_start))].sort()
+  return weeks.map((w) => {
+    const vals = rows
+      .filter((r) => r.week_start === w && r.score !== null && (!users || users.has(r.user_id)))
+      .map((r) => Number(r.score))
+    return {
+      label: t.compliance.weekOf(formatDateVN(w).slice(0, 5)),
+      value: vals.length
+        ? Math.round((10 * vals.reduce((a, b) => a + b, 0)) / vals.length) / 10
+        : null,
+    }
+  })
+}
+
+function planCounts(rows: DashboardPersonRow[]) {
+  const req = rows.filter((r) => r.plan_required || r.plan_id)
+  return {
+    required: req.length,
+    onTime: req.filter((r) => r.plan_id && !r.plan_is_late).length,
+    late: req.filter((r) => r.plan_id && r.plan_is_late).length,
+    none: req.filter((r) => !r.plan_id && !r.leave_type).length,
+    leave: rows.filter((r) => !r.plan_id && r.leave_type).length,
+  }
+}
+
+function reportCounts(rows: DashboardPersonRow[]) {
+  const req = rows.filter((r) => r.plan_required || r.report_submitted_at)
+  return {
+    required: req.length,
+    submitted: req.filter((r) => r.report_submitted_at).length,
+    late: req.filter((r) => r.report_submitted_at && r.report_status === 'late').length,
+    none: req.filter((r) => !r.report_submitted_at).length,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Hàng thẻ chỉ số
+// ---------------------------------------------------------------------------
+export function KpiRow({
+  date,
+  team,
+  trendEnd,
+  sales,
+}: {
+  date: string
+  team: string
+  trendEnd: string
+  sales: Period | null
+}) {
+  const people = useDashboardPeople(date)
+  const trend = useComplianceTrend(trendEnd)
+  const salesQ = useSalesSummary(sales?.from ?? '', sales?.to ?? '', Boolean(sales))
+  const bands = useBands()
+  const rows = (people.data ?? []).filter((r) => !team || r.teams.includes(team))
+  const p = planCounts(rows)
+  const r = reportCounts(rows)
+  const inTeam = team ? new Set(rows.map((x) => x.user_id)) : null
+  const avg = teamAverage(trend.data ?? [], inTeam)
+  const last = [...avg].reverse().find((x) => x.value !== null)?.value ?? null
+  const overduePeople = rows.filter((x) => x.tasks_overdue > 0).length
+  const overdueTotal = rows.reduce((s, x) => s + x.tasks_overdue, 0)
+  const s = salesQ.data
+  const kpiPct = s && s.kpi_month > 0 ? (100 * s.revenue_month) / s.kpi_month : 0
+
+  return (
+    <>
+      <KpiTile
+        delay={0}
+        label={`${t.kpi.plans} · ${formatDateVN(date).slice(0, 5)}`}
+        value={
+          <>
+            {p.onTime + p.late}
+            <span className="text-base font-medium text-muted-foreground">/{p.required}</span>
+          </>
+        }
+        foot={t.kpi.planFoot(p.late, p.none)}
+        visual={
+          <Ring
+            percent={ratio(p.onTime + p.late, p.required) ?? 0}
+            label={t.kpi.plans}
+            color={p.none ? '#4f46e5' : STATUS.good}
+          />
+        }
+      />
+      <KpiTile
+        delay={60}
+        label={`${t.kpi.reports} · ${formatDateVN(date).slice(0, 5)}`}
+        value={
+          <>
+            {r.submitted}
+            <span className="text-base font-medium text-muted-foreground">/{r.required}</span>
+          </>
+        }
+        foot={t.kpi.reportFoot(r.late, r.none)}
+        visual={<Ring percent={ratio(r.submitted, r.required) ?? 0} label={t.kpi.reports} />}
+      />
+      <KpiTile
+        delay={120}
+        label={t.kpi.avgScore}
+        value={formatScore(last)}
+        foot={<ScoreBadge score={last} bands={bands} />}
+        visual={avg.length > 0 ? <MiniArea points={avg} /> : undefined}
+      />
+      {sales ? (
+        <KpiTile
+          delay={180}
+          label={t.kpi.revenueMonth}
+          value={s ? `${compactVND(s.revenue_month)}` : '—'}
+          foot={
+            s
+              ? `${formatVND(s.revenue_month)} / ${t.kpi.kpiOf(compactVND(s.kpi_month))}`
+              : undefined
+          }
+          visual={s ? <Ring percent={kpiPct} label={t.kpi.revenueMonth} /> : undefined}
+        />
+      ) : (
+        <KpiTile
+          delay={180}
+          label={t.kpi.overdue}
+          value={overdueTotal}
+          tone={overdueTotal ? 'bad' : undefined}
+          foot={t.kpi.overdueFoot(overduePeople)}
+        />
+      )}
+    </>
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Khối 1: từng người trong ngày
 // ---------------------------------------------------------------------------
-export function PeopleBlock({ date, team }: { date: string; team: string }) {
+export function PeopleBlock({
+  date,
+  team,
+  className,
+}: {
+  date: string
+  team: string
+  className?: string
+}) {
   const q = useDashboardPeople(date)
   const rows = (q.data ?? []).filter((r) => !team || r.teams.includes(team))
-  const required = rows.filter((r) => r.plan_required)
-  const summary = t.people.summary(
-    required.filter((r) => r.plan_id).length,
-    required.length,
-    required.filter((r) => r.report_submitted_at).length,
-  )
+  const c = planCounts(rows)
   const link = (r: DashboardPersonRow) => `/bao-cao/${r.user_id}/${date}`
   const header = [
     t.people.person,
     t.csv.email,
-    vi.dashboard.goals.team,
+    t.goals.team,
     t.people.plan,
     t.people.report,
     t.people.due,
@@ -72,9 +234,21 @@ export function PeopleBlock({ date, team }: { date: string; team: string }) {
   ]
 
   return (
-    <Block
+    <BentoCard
+      className={className}
+      hover="subtle"
+      delay={240}
+      icon={Users}
       title={t.people.title(formatDateVN(date))}
-      description={q.data ? summary : undefined}
+      subtitle={
+        q.data
+          ? t.people.summary(
+              c.onTime + c.late,
+              c.required,
+              rows.filter((r) => r.report_submitted_at).length,
+            )
+          : undefined
+      }
       actions={
         <CsvButton
           filename={`quan-ly-nguoi-${date}`}
@@ -96,95 +270,109 @@ export function PeopleBlock({ date, team }: { date: string; team: string }) {
           }
         />
       }
-      contentClassName="p-0"
     >
       <Loading error={q.error} pending={q.isPending} />
       {q.data && rows.length === 0 && (
-        <p className="p-6 text-center text-sm text-muted-foreground">{vi.reports.teamEmpty}</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">{vi.reports.teamEmpty}</p>
       )}
-      {/* Mobile: danh sách */}
-      <ul className="md:hidden">
-        {rows.map((r) => (
-          <li key={r.user_id} className="border-t border-border">
-            <Link
-              to={link(r)}
-              className="flex min-h-14 items-center gap-3 px-4 py-2 hover:bg-muted"
-            >
-              <Avatar name={name(r)} src={r.avatar_url} className="size-9" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{name(r)}</p>
-                <div className="mt-1 flex flex-wrap items-center gap-1">
-                  <PersonBadges r={r} />
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  <PersonNumbers r={r} />
-                </p>
-              </div>
-              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-            </Link>
-          </li>
-        ))}
-      </ul>
-      {/* Desktop: bảng */}
       {rows.length > 0 && (
-        <div className="hidden overflow-x-auto md:block">
-          <table className="w-full text-sm">
-            <thead className="border-y border-border bg-muted/50 text-left text-xs text-muted-foreground">
-              <tr>
-                <th className="px-4 py-2 font-medium">{t.people.person}</th>
-                <th className="px-2 py-2 font-medium">{t.people.plan}</th>
-                <th className="px-2 py-2 font-medium">{t.people.report}</th>
-                <th className="px-2 py-2 text-right font-medium">{t.people.due}</th>
-                <th className="px-2 py-2 text-right font-medium">{t.people.overdue}</th>
-                <th className="px-4 py-2 font-medium">{t.people.lastCheckin}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr
-                  key={r.user_id}
-                  className="border-b border-border last:border-b-0 hover:bg-muted"
+        <div className="grid gap-5">
+          <StatusBar
+            segments={[
+              { key: 'on', label: vi.daily.planOnTime, value: c.onTime, color: STATUS.good },
+              { key: 'late', label: vi.daily.planLate, value: c.late, color: STATUS.warn },
+              {
+                key: 'none',
+                label: vi.daily.planNone,
+                value: c.none,
+                color: STATUS.bad,
+              },
+              { key: 'leave', label: vi.daily.planLeave, value: c.leave, color: STATUS.none },
+            ]}
+          />
+          {/* Mobile: danh sách */}
+          <ul className="-mx-2 grid gap-1 md:hidden">
+            {rows.map((r) => (
+              <li key={r.user_id}>
+                <Link
+                  to={link(r)}
+                  className="flex min-h-14 items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-slate-50"
                 >
-                  <td className="px-4 py-2">
-                    <Link
-                      to={link(r)}
-                      className="flex items-center gap-2 font-medium hover:underline"
-                    >
-                      <Avatar name={name(r)} src={r.avatar_url} className="size-7" />
-                      <span className="truncate">{name(r)}</span>
-                    </Link>
-                  </td>
-                  <td className="px-2 py-2">
-                    <PlanBadge
-                      submitted={Boolean(r.plan_id)}
-                      isLate={r.plan_is_late}
-                      onLeave={Boolean(r.leave_type)}
-                      required={r.plan_required}
-                    />
-                  </td>
-                  <td className="px-2 py-2">
-                    <ReportBadge
-                      submitted={Boolean(r.report_submitted_at)}
-                      status={r.report_status}
-                      required={r.plan_required}
-                    />
-                  </td>
-                  <td className="px-2 py-2 text-right tabular-nums">{r.tasks_due}</td>
-                  <td
-                    className={`px-2 py-2 text-right tabular-nums ${r.tasks_overdue ? 'font-semibold text-destructive' : ''}`}
-                  >
-                    {r.tasks_overdue}
-                  </td>
-                  <td className="px-4 py-2 text-xs text-muted-foreground">
-                    <CheckinText r={r} />
-                  </td>
+                  <Avatar name={name(r)} src={r.avatar_url} className="size-9" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{name(r)}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-1">
+                      <PersonBadges r={r} />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      <PersonNumbers r={r} />
+                    </p>
+                  </div>
+                  <ChevronRight className="size-4 shrink-0 text-slate-300" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {/* Desktop: bảng */}
+          <div className="-mx-2 hidden overflow-x-auto md:block">
+            <table className="w-full text-sm">
+              <thead className="text-left text-xs text-muted-foreground">
+                <tr className="border-b border-slate-100">
+                  <th className="px-2 pb-2 font-medium">{t.people.person}</th>
+                  <th className="px-2 pb-2 font-medium">{t.people.plan}</th>
+                  <th className="px-2 pb-2 font-medium">{t.people.report}</th>
+                  <th className="px-2 pb-2 text-right font-medium">{t.people.due}</th>
+                  <th className="px-2 pb-2 text-right font-medium">{t.people.overdue}</th>
+                  <th className="px-2 pb-2 font-medium">{t.people.lastCheckin}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr
+                    key={r.user_id}
+                    className="border-b border-slate-100 transition-colors last:border-b-0 hover:bg-slate-50/80"
+                  >
+                    <td className="px-2 py-2.5">
+                      <Link to={link(r)} className="flex items-center gap-2.5 font-medium">
+                        <Avatar name={name(r)} src={r.avatar_url} className="size-8" />
+                        <span className="truncate hover:text-primary">{name(r)}</span>
+                      </Link>
+                    </td>
+                    <td className="px-2 py-2.5">
+                      <PlanBadge
+                        submitted={Boolean(r.plan_id)}
+                        isLate={r.plan_is_late}
+                        onLeave={Boolean(r.leave_type)}
+                        required={r.plan_required}
+                      />
+                    </td>
+                    <td className="px-2 py-2.5">
+                      <ReportBadge
+                        submitted={Boolean(r.report_submitted_at)}
+                        status={r.report_status}
+                        required={r.plan_required}
+                      />
+                    </td>
+                    <td className="px-2 py-2.5 text-right tabular-nums">{r.tasks_due}</td>
+                    <td
+                      className={cn(
+                        'px-2 py-2.5 text-right tabular-nums',
+                        r.tasks_overdue > 0 && 'font-semibold text-rose-600',
+                      )}
+                    >
+                      {r.tasks_overdue}
+                    </td>
+                    <td className="px-2 py-2.5 text-xs text-muted-foreground">
+                      <CheckinText r={r} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
-    </Block>
+    </BentoCard>
   )
 }
 
@@ -212,10 +400,10 @@ function PersonNumbers({ r }: { r: DashboardPersonRow }) {
   return (
     <>
       {t.people.due} {r.tasks_due} ·{' '}
-      <span className={r.tasks_overdue ? 'font-semibold text-destructive' : ''}>
+      <span className={r.tasks_overdue ? 'font-semibold text-rose-600' : ''}>
         {t.people.overdue} {r.tasks_overdue}
       </span>
-      {r.last_checkin_at && (
+      {r.last_checkin_at && r.checkins > 0 && (
         <>
           {' '}
           · {t.people.lastCheckin.toLowerCase()} {formatTimeVN(r.last_checkin_at)}
@@ -251,11 +439,14 @@ function InboxSection({
 }) {
   if (count === 0) return null
   return (
-    <section className="grid gap-1">
-      <h3 className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase">
-        {title} <Badge variant="secondary">{count}</Badge>
+    <section className="grid gap-1.5">
+      <h3 className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+        {title}
+        <span className="rounded-full bg-slate-100 px-1.5 text-[11px] font-semibold text-slate-600 tabular-nums">
+          {count}
+        </span>
       </h3>
-      <ul className="divide-y divide-border rounded-lg border border-border">{children}</ul>
+      <ul className="grid gap-1">{children}</ul>
     </section>
   )
 }
@@ -263,15 +454,18 @@ function InboxSection({
 function InboxLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
     <li>
-      <Link to={to} className="flex min-h-11 items-center gap-2 px-3 py-2 text-sm hover:bg-muted">
+      <Link
+        to={to}
+        className="group flex min-h-11 items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm transition-colors hover:bg-secondary"
+      >
         <span className="min-w-0 flex-1">{children}</span>
-        <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+        <ChevronRight className="size-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
       </Link>
     </li>
   )
 }
 
-export function InboxBlock() {
+export function InboxBlock({ className }: { className?: string }) {
   const q = useDashboardInbox()
   const resolve = useResolveEscalation()
   const d = q.data
@@ -325,11 +519,24 @@ export function InboxBlock() {
   }
 
   return (
-    <Block
+    <BentoCard
+      className={className}
+      hover="subtle"
+      delay={300}
+      icon={Inbox}
       title={
         <span className="flex items-center gap-2">
-          {t.inbox.title}{' '}
-          {d && <Badge variant={total ? 'destructive' : 'secondary'}>{total}</Badge>}
+          {t.inbox.title}
+          {d && (
+            <span
+              className={cn(
+                'rounded-full px-2 text-xs font-semibold tabular-nums',
+                total ? 'bg-primary text-primary-foreground' : 'bg-slate-100 text-slate-500',
+              )}
+            >
+              {total}
+            </span>
+          )}
         </span>
       }
       actions={
@@ -341,35 +548,51 @@ export function InboxBlock() {
       }
     >
       <Loading error={q.error} pending={q.isPending} />
-      {d && total === 0 && <p className="text-sm text-muted-foreground">{t.inbox.empty}</p>}
+      {d && total === 0 && (
+        <p className="py-6 text-center text-sm text-muted-foreground">{t.inbox.empty}</p>
+      )}
       {d && (
-        <div className="grid gap-4">
+        <div className="grid gap-5">
           <InboxSection title={t.inbox.escalations} count={d.escalations.length}>
             {d.escalations.map((e) => (
-              <li key={e.id} className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm">
-                <p className="w-full">
-                  <Badge variant={e.level === 2 ? 'destructive' : 'warning'}>
+              <li
+                key={e.id}
+                className={cn(
+                  'grid gap-2 rounded-xl p-3 text-sm ring-1 ring-inset',
+                  e.level === 2 ? 'bg-rose-50/70 ring-rose-200' : 'bg-amber-50/70 ring-amber-200',
+                )}
+              >
+                <p>
+                  <span
+                    className={cn(
+                      'mr-1.5 rounded-md px-1.5 py-0.5 text-[11px] font-semibold',
+                      e.level === 2 ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-800',
+                    )}
+                  >
                     {t.inbox.level(e.level)}
-                  </Badge>{' '}
+                  </span>
                   <strong>{e.name}</strong> · {e.reason}
                 </p>
-                {e.task_id && (
-                  <Link to={`/viec?task=${e.task_id}`}>
-                    <Button size="sm" variant="outline">
-                      <ExternalLink /> {t.inbox.openTask}
-                    </Button>
-                  </Link>
-                )}
-                <Button
-                  size="sm"
-                  disabled={resolve.isPending}
-                  onClick={() => {
-                    const note = window.prompt(t.inbox.resolvePrompt)
-                    if (note?.trim()) resolve.mutate({ id: e.id, note })
-                  }}
-                >
-                  {t.inbox.resolve}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {e.task_id && (
+                    <Link to={`/viec?task=${e.task_id}`}>
+                      <Button size="sm" variant="outline" className="rounded-lg bg-white">
+                        <ExternalLink /> {t.inbox.openTask}
+                      </Button>
+                    </Link>
+                  )}
+                  <Button
+                    size="sm"
+                    className="rounded-lg"
+                    disabled={resolve.isPending}
+                    onClick={() => {
+                      const note = window.prompt(t.inbox.resolvePrompt)
+                      if (note?.trim()) resolve.mutate({ id: e.id, note })
+                    }}
+                  >
+                    {t.inbox.resolve}
+                  </Button>
+                </div>
               </li>
             ))}
           </InboxSection>
@@ -377,33 +600,34 @@ export function InboxBlock() {
           <InboxSection title={t.inbox.decisions} count={d.decisions.length}>
             {d.decisions.map((x) => (
               <InboxLink key={x.id} to={`/bao-cao/${x.user_id}/${x.date}`}>
-                <strong>{x.name}</strong> · {formatDateVN(x.date)}
-                <span className="block text-xs text-destructive">{x.text}</span>
+                <strong className="font-medium">{x.name}</strong>
+                <span className="text-muted-foreground"> · {formatDateVN(x.date)}</span>
+                <span className="mt-0.5 block text-xs text-rose-600">{x.text}</span>
               </InboxLink>
             ))}
           </InboxSection>
           <InboxSection title={t.inbox.plans} count={d.plans.length}>
             {d.plans.map((x) => (
               <InboxLink key={x.id} to={`/bao-cao/${x.user_id}/${x.date}`}>
-                <strong>{x.name}</strong> · {formatDateVN(x.date)}
-                {x.is_late && <span className="text-warning-foreground"> · {t.inbox.late}</span>}
+                <strong className="font-medium">{x.name}</strong>
+                <span className="text-muted-foreground"> · {formatDateVN(x.date)}</span>
+                {x.is_late && <span className="text-amber-700"> · {t.inbox.late}</span>}
               </InboxLink>
             ))}
           </InboxSection>
           <InboxSection title={t.inbox.reports} count={d.reports.length}>
             {d.reports.map((x) => (
               <InboxLink key={x.id} to={`/bao-cao/${x.user_id}/${x.date}`}>
-                <strong>{x.name}</strong> · {formatDateVN(x.date)}
-                {x.status === 'late' && (
-                  <span className="text-warning-foreground"> · {t.inbox.late}</span>
-                )}
+                <strong className="font-medium">{x.name}</strong>
+                <span className="text-muted-foreground"> · {formatDateVN(x.date)}</span>
+                {x.status === 'late' && <span className="text-amber-700"> · {t.inbox.late}</span>}
               </InboxLink>
             ))}
           </InboxSection>
           <InboxSection title={t.inbox.tasks} count={d.tasks_review.length}>
             {d.tasks_review.map((x) => (
               <InboxLink key={x.id} to={`/viec?task=${x.id}`}>
-                {x.title}
+                <span className="font-medium">{x.title}</span>
                 <span className="block text-xs text-muted-foreground">
                   {x.name ?? '—'}
                   {x.due_date ? ` · ${formatDateVN(x.due_date)}` : ''}
@@ -414,7 +638,11 @@ export function InboxBlock() {
           <InboxSection title={t.inbox.leaves} count={d.leaves_pending.length}>
             {d.leaves_pending.map((x) => (
               <InboxLink key={x.id} to="/bao-cao?tab=team">
-                <strong>{x.name}</strong> · {formatDateVN(x.date)} · {vi.leaveTypes[x.type]}
+                <strong className="font-medium">{x.name}</strong>
+                <span className="text-muted-foreground">
+                  {' '}
+                  · {formatDateVN(x.date)} · {vi.leaveTypes[x.type]}
+                </span>
               </InboxLink>
             ))}
           </InboxSection>
@@ -425,7 +653,7 @@ export function InboxBlock() {
           </InboxSection>
         </div>
       )}
-    </Block>
+    </BentoCard>
   )
 }
 
@@ -438,12 +666,14 @@ export function ComplianceBlock({
   label,
   trendEnd,
   team,
+  className,
 }: {
   from: string
   to: string
   label: string
   trendEnd: string
   team: string
+  className?: string
 }) {
   const bands = useBands()
   const weights = useWeights()
@@ -465,18 +695,24 @@ export function ComplianceBlock({
     { key: 'tasks', label: t.compliance.tasks },
     { key: 'off_plan', label: t.compliance.offPlan },
   ]
+  const bandCount = (b: 'good' | 'warn' | 'bad') =>
+    rows.filter((r) => scoreBand(r.score, bands) === b).length
 
   return (
-    <Block
+    <BentoCard
+      className={className}
+      hover="subtle"
+      delay={360}
+      icon={Gauge}
       title={`${t.compliance.title} · ${label}`}
-      description={t.compliance.hint(weights)}
+      subtitle={t.compliance.hint(weights)}
       actions={
         <CsvButton
           filename={`quan-ly-tuan-thu-${from}_${to}`}
           header={[
             t.people.person,
             t.csv.email,
-            vi.dashboard.goals.team,
+            t.goals.team,
             t.compliance.score,
             t.csv.band,
             ...cols.map((c) => c.label),
@@ -495,72 +731,102 @@ export function ComplianceBlock({
           }
         />
       }
-      contentClassName="p-0"
     >
       <Loading error={q.error} pending={q.isPending} />
       {q.data && rows.length === 0 && (
-        <p className="p-6 text-center text-sm text-muted-foreground">{t.empty}</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">{t.empty}</p>
       )}
-      {/* Mobile: danh sách */}
-      <ul className="sm:hidden">
-        {rows.map((r) => (
-          <li key={r.user_id} className="grid gap-1 border-t border-border px-4 py-3">
-            <div className="flex items-center justify-between gap-2">
-              <p className="min-w-0 truncate text-sm font-medium">{name(r)}</p>
-              <ScoreBadge score={r.score} bands={bands} />
-            </div>
-            <div className="flex items-end justify-between gap-2">
-              <p className="text-xs text-muted-foreground">
-                {cols.map((c) => `${c.label} ${formatScore(r[c.key])}`).join(' · ')}
-              </p>
-              {trend.data && <Sparkline points={trendOf(r.user_id)} bands={bands} />}
-            </div>
-          </li>
-        ))}
-      </ul>
       {rows.length > 0 && (
-        <div className="hidden overflow-x-auto sm:block">
-          <table className="w-full text-sm">
-            <thead className="border-y border-border bg-muted/50 text-left text-xs text-muted-foreground">
-              <tr>
-                <th className="px-4 py-2 font-medium">{t.people.person}</th>
-                <th className="px-2 py-2 font-medium">{t.compliance.score}</th>
-                {cols.map((c) => (
-                  <th key={c.key} className="px-2 py-2 text-right font-medium">
-                    {c.label}
-                  </th>
-                ))}
-                <th className="px-4 py-2 font-medium">{t.compliance.trend}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.user_id} className="border-b border-border last:border-b-0">
-                  <td className="px-4 py-2">
-                    <p className="font-medium">{name(r)}</p>
-                  </td>
-                  <td className="px-2 py-2">
-                    <ScoreBadge score={r.score} bands={bands} />
-                  </td>
+        <div className="grid gap-4">
+          <StatusBar
+            segments={[
+              {
+                key: 'good',
+                label: t.compliance.bands.good,
+                value: bandCount('good'),
+                color: STATUS.good,
+              },
+              {
+                key: 'warn',
+                label: t.compliance.bands.warn,
+                value: bandCount('warn'),
+                color: STATUS.warn,
+              },
+              {
+                key: 'bad',
+                label: t.compliance.bands.bad,
+                value: bandCount('bad'),
+                color: STATUS.bad,
+              },
+              {
+                key: 'none',
+                label: t.compliance.bands.none,
+                value: rows.length - bandCount('good') - bandCount('warn') - bandCount('bad'),
+                color: STATUS.none,
+              },
+            ]}
+          />
+          {/* Mobile: danh sách */}
+          <ul className="-mx-2 grid gap-1 sm:hidden">
+            {rows.map((r) => (
+              <li key={r.user_id} className="grid gap-1 rounded-xl px-2 py-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="min-w-0 truncate text-sm font-medium">{name(r)}</p>
+                  <ScoreBadge score={r.score} bands={bands} />
+                </div>
+                <div className="flex items-end justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    {cols.map((c) => `${c.label} ${formatScore(r[c.key])}`).join(' · ')}
+                  </p>
+                  {trend.data && <Sparkline points={trendOf(r.user_id)} bands={bands} />}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="-mx-2 hidden overflow-x-auto sm:block">
+            <table className="w-full text-sm">
+              <thead className="text-left text-xs text-muted-foreground">
+                <tr className="border-b border-slate-100">
+                  <th className="px-2 pb-2 font-medium">{t.people.person}</th>
+                  <th className="px-2 pb-2 font-medium">{t.compliance.score}</th>
                   {cols.map((c) => (
-                    <td
-                      key={c.key}
-                      className="px-2 py-2 text-right tabular-nums"
-                      title={detailTitle(r, c.key)}
-                    >
-                      {formatScore(r[c.key])}
-                    </td>
+                    <th key={c.key} className="px-2 pb-2 text-right font-medium">
+                      {c.label}
+                    </th>
                   ))}
-                  <td className="px-4 py-2">
-                    {trend.data && <Sparkline points={trendOf(r.user_id)} bands={bands} />}
-                  </td>
+                  <th className="px-2 pb-2 font-medium">{t.compliance.trend}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr
+                    key={r.user_id}
+                    className="border-b border-slate-100 transition-colors last:border-b-0 hover:bg-slate-50/80"
+                  >
+                    <td className="px-2 py-2 font-medium">{name(r)}</td>
+                    <td className="px-2 py-2">
+                      <ScoreBadge score={r.score} bands={bands} />
+                    </td>
+                    {cols.map((c) => (
+                      <td
+                        key={c.key}
+                        className="px-2 py-2 text-right text-slate-600 tabular-nums"
+                        title={detailTitle(r, c.key)}
+                      >
+                        {formatScore(r[c.key])}
+                      </td>
+                    ))}
+                    <td className="px-2 py-1">
+                      {trend.data && <Sparkline points={trendOf(r.user_id)} bands={bands} />}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
-    </Block>
+    </BentoCard>
   )
 }
 
@@ -573,149 +839,214 @@ function detailTitle(r: ComplianceScoreRow, key: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Khối 4: Sales
+// Khối 4: Sales (4 thẻ)
 // ---------------------------------------------------------------------------
-export function SalesBlock({ period, label }: { period: Period; label: string }) {
+function salesCsv(s: SalesSummary | undefined, monthLabel: string) {
+  if (!s) return []
+  const sla = ratio(s.contacted_in_sla, s.sla_due)
+  return [
+    [t.sales.newLeads, s.new_leads, ''],
+    [
+      t.sales.sla,
+      sla === null ? '' : `${formatScore(sla)}%`,
+      t.sales.slaDetail(s.contacted_in_sla, s.sla_due),
+    ],
+    [t.sales.overdue, s.overdue_now, ''],
+    [t.sales.won, s.won, ''],
+    [t.sales.lost, s.lost, ''],
+    [t.sales.revenue, s.revenue, ''],
+    [t.sales.revenueMonth(monthLabel), s.revenue_month, `KPI ${s.kpi_month}`],
+    ...s.pipeline.map((p) => [`${t.sales.pipeline}: ${vi.stages[p.stage]}`, p.count, p.value]),
+    ...s.lost_reasons.map((r) => [
+      `${t.sales.lostReasons}: ${r.reason ?? t.sales.noReason}`,
+      r.count,
+      '',
+    ]),
+    ...(s.revenue_daily ?? []).map((d) => [
+      `${t.sales.revenue}: ${formatDateVN(d.date)}`,
+      d.revenue,
+      '',
+    ]),
+  ]
+}
+
+export function SalesBlocks({
+  period,
+  label,
+  classNames,
+}: {
+  period: Period
+  label: string
+  classNames: { revenue: string; leads: string; pipeline: string; lost: string }
+}) {
   const q = useSalesSummary(period.from, period.to, true)
   const s = q.data
+  const [y, m] = period.to.split('-').map(Number) as [number, number]
+  const monthLabel = `${String(m).padStart(2, '0')}/${y}`
   const slaPct = s ? ratio(s.contacted_in_sla, s.sla_due) : null
-  const monthPct = s && s.kpi_month > 0 ? (100 * s.revenue_month) / s.kpi_month : 0
-  const [y, m, d] = period.to.split('-').map(Number) as [number, number, number]
-  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate()
-  const expected = (100 * d) / daysInMonth
+  const csv = (
+    <CsvButton
+      filename={`quan-ly-sales-${period.from}_${period.to}`}
+      header={[t.csv.metric, t.csv.value, t.csv.note]}
+      rows={() => salesCsv(s, monthLabel)}
+    />
+  )
 
   return (
-    <Block
-      title={`${t.sales.title} · ${label}`}
-      actions={
-        <CsvButton
-          filename={`quan-ly-sales-${period.from}_${period.to}`}
-          header={[t.csv.metric, t.csv.value, t.csv.note]}
-          rows={() =>
-            s
-              ? [
-                  [t.sales.newLeads, s.new_leads, ''],
-                  [
-                    t.sales.sla,
-                    slaPct === null ? '' : `${formatScore(slaPct)}%`,
-                    t.sales.slaDetail(s.contacted_in_sla, s.sla_due),
-                  ],
-                  [t.sales.overdue, s.overdue_now, ''],
-                  [t.sales.won, s.won, ''],
-                  [t.sales.lost, s.lost, ''],
-                  [t.sales.revenue, s.revenue, ''],
-                  [
-                    t.sales.revenueMonth(`${String(m).padStart(2, '0')}/${y}`),
-                    s.revenue_month,
-                    `KPI ${s.kpi_month}`,
-                  ],
-                  ...s.pipeline.map((p) => [
-                    `${t.sales.pipeline}: ${vi.stages[p.stage]}`,
-                    p.count,
-                    p.value,
-                  ]),
-                  ...s.lost_reasons.map((r) => [
-                    `${t.sales.lostReasons}: ${r.reason ?? t.sales.noReason}`,
-                    r.count,
-                    '',
-                  ]),
-                ]
-              : []
-          }
-        />
-      }
-    >
-      <Loading error={q.error} pending={q.isPending} />
-      {s && (
-        <div className="grid gap-5">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <Stat label={t.sales.newLeads} value={formatNumber(s.new_leads)} />
-            <Stat
-              label={t.sales.sla}
-              value={slaPct === null ? '—' : `${formatScore(slaPct)}%`}
-              detail={t.sales.slaDetail(s.contacted_in_sla, s.sla_due)}
-            />
-            <Stat
-              label={t.sales.overdue}
-              value={formatNumber(s.overdue_now)}
-              tone={s.overdue_now > 0 ? 'bad' : undefined}
-            />
-            <Stat
-              label={`${t.sales.won} / ${t.sales.lost}`}
-              value={`${formatNumber(s.won)} / ${formatNumber(s.lost)}`}
-              detail={`${t.sales.revenue}: ${formatVND(s.revenue)}`}
-            />
-          </div>
-
-          <section className="grid gap-2">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h3 className="text-sm font-medium">
-                {t.sales.revenueMonth(`${String(m).padStart(2, '0')}/${y}`)}
-              </h3>
-              <p className="text-sm tabular-nums">
-                <strong>{formatScore(monthPct)}%</strong>{' '}
-                <span className="text-muted-foreground">
-                  {t.sales.kpiDetail(formatVND(s.revenue_month), formatVND(s.kpi_month))}
-                </span>
+    <>
+      <BentoCard
+        className={classNames.revenue}
+        delay={420}
+        icon={TrendingUp}
+        title={t.sales.revenueTrend(monthLabel)}
+        subtitle={t.sales.revenueTrendHint}
+        actions={csv}
+      >
+        <Loading error={q.error} pending={q.isPending} />
+        {s && (
+          <div className="grid gap-4">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <p className="text-3xl font-semibold tracking-tight tabular-nums">
+                {formatVND(s.revenue_month)}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                / {formatVND(s.kpi_month)} ·{' '}
+                <strong className="text-foreground">
+                  {formatScore(s.kpi_month ? (100 * s.revenue_month) / s.kpi_month : 0)}%
+                </strong>
               </p>
             </div>
-            <ProgressBar
-              percent={monthPct}
-              expected={expected}
-              label={t.sales.revenueMonth(`${m}/${y}`)}
+            <RevenueChart
+              data={cumulativeRevenue(s.revenue_daily ?? [], s.kpi_month)}
+              kpi={s.kpi_month}
             />
-          </section>
-
-          <div className="grid gap-5 md:grid-cols-2">
-            <section className="grid content-start gap-2">
-              <h3 className="text-sm font-medium">{t.sales.pipeline}</h3>
-              {s.pipeline.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t.empty}</p>
-              ) : (
-                <BarList
-                  rows={s.pipeline.map((p) => ({
-                    key: p.stage,
-                    label: vi.stages[p.stage],
-                    value: p.count,
-                    valueLabel: String(p.count),
-                    tooltip: `${vi.stages[p.stage]}: ${p.count} lead · ${t.sales.value} ${formatVND(p.value)}`,
-                  }))}
-                />
-              )}
-            </section>
-            <section className="grid content-start gap-2">
-              <h3 className="text-sm font-medium">{t.sales.lostReasons}</h3>
-              {s.lost_reasons.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t.empty}</p>
-              ) : (
-                <BarList
-                  rows={s.lost_reasons.map((r, i) => ({
-                    key: `${r.reason ?? ''}-${i}`,
-                    label: r.reason ?? t.sales.noReason,
-                    value: r.count,
-                    valueLabel: String(r.count),
-                    tooltip: `${r.reason ?? t.sales.noReason}: ${r.count}`,
-                  }))}
-                />
-              )}
-            </section>
           </div>
-        </div>
-      )}
-    </Block>
+        )}
+      </BentoCard>
+
+      <BentoCard
+        className={classNames.leads}
+        delay={480}
+        icon={Users}
+        title={`${t.sales.leads} · ${label}`}
+      >
+        <Loading error={q.error} pending={q.isPending} />
+        {s && (
+          <div className="grid gap-4">
+            <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-4">
+              <Ring percent={slaPct ?? 0} size={72} label={t.sales.sla} />
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">{t.sales.sla}</p>
+                <p className="text-2xl font-semibold tracking-tight tabular-nums">
+                  {slaPct === null ? '—' : `${formatScore(slaPct)}%`}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t.sales.slaDetail(s.contacted_in_sla, s.sla_due)}
+                </p>
+              </div>
+            </div>
+            <dl className="grid grid-cols-2 gap-3">
+              {(
+                [
+                  [t.sales.newLeads, formatNumber(s.new_leads), false],
+                  [t.sales.overdue, formatNumber(s.overdue_now), s.overdue_now > 0],
+                  [t.sales.won, formatNumber(s.won), false],
+                  [t.sales.lost, formatNumber(s.lost), false],
+                ] as const
+              ).map(([k, v, bad]) => (
+                <div key={k} className="rounded-xl border border-slate-100 p-3">
+                  <dt className="text-xs text-muted-foreground">{k}</dt>
+                  <dd
+                    className={cn(
+                      'mt-0.5 text-xl font-semibold tabular-nums',
+                      bad && 'text-rose-600',
+                    )}
+                  >
+                    {v}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p className="text-xs text-muted-foreground">
+              {t.sales.revenue}: <strong className="text-foreground">{formatVND(s.revenue)}</strong>
+            </p>
+          </div>
+        )}
+      </BentoCard>
+
+      <BentoCard
+        className={classNames.pipeline}
+        delay={540}
+        icon={Funnel}
+        title={t.sales.pipeline}
+        subtitle={
+          s
+            ? `${formatNumber(s.pipeline.reduce((a, p) => a + p.count, 0))} lead · ${t.sales.value} ${formatVND(s.pipeline.reduce((a, p) => a + Number(p.value), 0))}`
+            : undefined
+        }
+      >
+        {s &&
+          (s.pipeline.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t.empty}</p>
+          ) : (
+            <HBarChart
+              name={t.sales.count}
+              rows={s.pipeline.map((p) => ({
+                key: p.stage,
+                label: vi.stages[p.stage],
+                value: p.count,
+                detail: `${t.sales.value} ${formatVND(p.value)}`,
+              }))}
+            />
+          ))}
+      </BentoCard>
+
+      <BentoCard
+        className={classNames.lost}
+        delay={600}
+        icon={CircleSlash}
+        title={t.sales.lostReasons}
+        subtitle={label}
+      >
+        {s &&
+          (s.lost_reasons.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t.empty}</p>
+          ) : (
+            <HBarChart
+              name={t.sales.count}
+              rows={s.lost_reasons.map((r, i) => ({
+                key: `${r.reason ?? ''}-${i}`,
+                label: r.reason ?? t.sales.noReason,
+                value: r.count,
+              }))}
+            />
+          ))}
+      </BentoCard>
+    </>
   )
 }
 
 // ---------------------------------------------------------------------------
 // Khối 5: mục tiêu tuần
 // ---------------------------------------------------------------------------
-export function GoalsBlock({ date, team }: { date: string; team: string }) {
+export function GoalsBlock({
+  date,
+  team,
+  className,
+}: {
+  date: string
+  team: string
+  className?: string
+}) {
   const week = weekStart(date)
   const q = useWeeklyGoals(week)
   const rows = (q.data ?? []).filter((g) => !team || g.team_id === team)
   const label = `${formatDateVN(week).slice(0, 5)} – ${formatDateVN(addDays(week, 6))}`
   return (
-    <Block
+    <BentoCard
+      className={className}
+      delay={660}
+      icon={Target}
       title={t.goals.title(label)}
       actions={
         <CsvButton
@@ -745,16 +1076,16 @@ export function GoalsBlock({ date, team }: { date: string; team: string }) {
       {q.data && rows.length === 0 && (
         <p className="text-sm text-muted-foreground">
           {t.goals.empty}{' '}
-          <Link to="/muc-tieu" className="text-primary underline">
+          <Link to="/muc-tieu" className="font-medium text-primary hover:underline">
             {vi.nav.goals}
           </Link>
         </p>
       )}
-      <ul className="grid gap-3">
+      <ul className="grid gap-5">
         {rows.map((g) => {
           const pct = goalPercent(g.actual, g.target)
           return (
-            <li key={g.id} className="grid gap-1.5">
+            <li key={g.id} className="grid gap-2">
               <div className="flex flex-wrap items-baseline justify-between gap-x-2">
                 <p className="min-w-0 flex-1 text-sm font-medium">
                   {g.title}{' '}
@@ -763,7 +1094,7 @@ export function GoalsBlock({ date, team }: { date: string; team: string }) {
                   </span>
                 </p>
                 <p className="text-sm tabular-nums">
-                  <strong>{pct}%</strong>{' '}
+                  <strong className={pct >= 100 ? 'text-emerald-600' : ''}>{pct}%</strong>{' '}
                   <span className="text-muted-foreground">
                     {formatNumber(g.actual ?? 0)}/{formatNumber(g.target)} {g.unit ?? ''}
                   </span>
@@ -774,14 +1105,22 @@ export function GoalsBlock({ date, team }: { date: string; team: string }) {
           )
         })}
       </ul>
-    </Block>
+    </BentoCard>
   )
 }
 
 // ---------------------------------------------------------------------------
 // Khối 6: bản đồ check-in trong ngày
 // ---------------------------------------------------------------------------
-export function CheckinMapBlock({ date, team }: { date: string; team: string }) {
+export function CheckinMapBlock({
+  date,
+  team,
+  className,
+}: {
+  date: string
+  team: string
+  className?: string
+}) {
   const q = useCheckIns(date, null)
   const users = useUsers()
   const userOf = (id: string) => users.data?.find((u) => u.id === id)
@@ -790,8 +1129,13 @@ export function CheckinMapBlock({ date, team }: { date: string; team: string }) 
     (c) => !team || userOf(c.user_id)?.teams.some((m) => m.team_id === team),
   )
   return (
-    <Block
+    <BentoCard
+      className={className}
+      hover="lift"
+      delay={720}
+      icon={MapPin}
       title={t.map.title(formatDateVN(date))}
+      subtitle={rows.length ? `${rows.length} check-in` : undefined}
       actions={
         <CsvButton
           filename={`quan-ly-check-in-${date}`}
@@ -810,13 +1154,14 @@ export function CheckinMapBlock({ date, team }: { date: string; team: string }) 
     >
       <Loading error={q.error} pending={q.isPending} />
       {q.data && (
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           <MapView
-            className="h-64 md:h-80"
+            className="h-64 rounded-xl border-slate-100 md:h-72"
             points={rows.map((c) => ({
               id: c.id,
               lat: c.lat,
               lng: c.lng,
+              color: '#4f46e5',
               popup: (
                 <span>
                   <strong>{formatTimeVN(c.checked_in_at)}</strong> · {nameOf(c.user_id)}
@@ -829,22 +1174,21 @@ export function CheckinMapBlock({ date, team }: { date: string; team: string }) 
           {rows.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t.map.empty}</p>
           ) : (
-            <ul className="divide-y divide-border text-sm">
+            <ol className="relative grid gap-3 border-l border-slate-200 pl-4 text-sm">
               {rows.map((c) => (
-                <li key={c.id} className="flex gap-3 py-1.5">
-                  <span className="w-12 shrink-0 font-medium tabular-nums">
+                <li key={c.id} className="relative">
+                  <span className="absolute top-1.5 -left-[21px] size-2.5 rounded-full bg-primary ring-4 ring-white" />
+                  <span className="font-semibold tabular-nums">
                     {formatTimeVN(c.checked_in_at)}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate">
-                    {nameOf(c.user_id)}
-                    <span className="text-muted-foreground"> · {c.place_name}</span>
-                  </span>
+                  </span>{' '}
+                  <span>{nameOf(c.user_id)}</span>
+                  <span className="text-muted-foreground"> · {c.place_name}</span>
                 </li>
               ))}
-            </ul>
+            </ol>
           )}
         </div>
       )}
-    </Block>
+    </BentoCard>
   )
 }

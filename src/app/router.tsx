@@ -69,6 +69,7 @@ export const router = createBrowserRouter([
           { path: 'bao-cao/:userId/:date', element: <DayDetailPage /> },
           {
             path: 'quan-ly',
+            handle: { theme: 'premium', wide: true },
             element: (
               <RequireNav navKey="dashboard">
                 <DashboardPage />

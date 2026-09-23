@@ -175,7 +175,7 @@ insert into orders (customer_id, sales_id, order_date, total_value_vnd, status) 
   ((select id from customers where name = 'KH'), get_user_id('long@mita.test'), '2026-10-07', 5000000, 'draft');
 select tests.authenticate_as('manager@mita.test');
 select is(
-  fn_dashboard_sales('2026-10-05', '2026-10-11') - array['pipeline', 'lost_reasons', 'by_source', 'lost', 'won', 'kpi_month'],
+  fn_dashboard_sales('2026-10-05', '2026-10-11') - array['pipeline', 'lost_reasons', 'by_source', 'lost', 'won', 'kpi_month', 'revenue_daily'],
   '{"revenue": 10000000, "sla_due": 3, "new_leads": 3, "overdue_now": 1, "revenue_month": 10000000, "contacted_in_sla": 1}'::jsonb,
   'Số liệu Sales khớp dữ liệu thô (đơn nháp không tính doanh số)'
 );

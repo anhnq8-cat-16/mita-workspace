@@ -1,21 +1,21 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Input, Select } from '@/components/ui/input'
-import { Tabs } from '@/components/ui/tabs'
 import { useSalesActor } from '@/features/sales/api'
 import { canReadAllSales } from '@/features/sales/sales-rules'
 import { useTeams } from '@/features/settings/api'
 import { vi } from '@/i18n/vi'
-import { todayVN } from '@/lib/date-vn'
+import { todayVN, weekdayVN } from '@/lib/date-vn'
+import { cn } from '@/lib/utils'
 import {
   CheckinMapBlock,
   ComplianceBlock,
   GoalsBlock,
   InboxBlock,
+  KpiRow,
   PeopleBlock,
-  SalesBlock,
+  SalesBlocks,
 } from './blocks'
+import { Segmented } from './parts'
 import {
   focusDate,
   parsePeriod,
@@ -28,6 +28,9 @@ import {
 
 const t = vi.dashboard
 
+const control =
+  'flex min-h-11 items-center rounded-xl border border-slate-200 bg-white text-sm shadow-sm transition-colors hover:border-slate-300 focus-within:ring-2 focus-within:ring-ring sm:min-h-10'
+
 /** /quan-ly: dashboard cho trưởng nhóm / quản lý / admin. Kỳ và team lưu trên URL. */
 export function DashboardPage() {
   const [params, setParams] = useSearchParams()
@@ -36,6 +39,7 @@ export function DashboardPage() {
   const team = params.get('team') ?? ''
   const teams = useTeams()
   const salesActor = useSalesActor()
+  const showSales = canReadAllSales(salesActor)
   const day = focusDate(period, today)
 
   const update = (p: Period, nextTeam = team) => {
@@ -48,14 +52,24 @@ export function DashboardPage() {
 
   // Tuân thủ luôn theo tuần (chế độ ngày → tuần chứa ngày đó) hoặc theo tháng
   const compliancePeriod = period.mode === 'day' ? periodOf('week', period.date) : period
+  const teamName = teams.data?.find((x) => x.id === team)?.name ?? t.allTeams
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-4">
-      <div className="grid gap-3">
-        <h1 className="text-xl font-semibold">{t.title}</h1>
+    <div className="grid gap-6 pb-4 sm:gap-8">
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-sm font-medium text-primary">{vi.nav.dashboard}</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            {t.title}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t.subtitle(`${weekdayVN(`${day}T05:00:00Z`)}, ${periodLabel(period)}`, teamName)}
+          </p>
+        </div>
         {/* Bộ lọc: 1 hàng phía trên mọi khối */}
         <div className="flex flex-wrap items-center gap-2">
-          <Tabs<PeriodMode>
+          <Segmented<PeriodMode>
+            label={t.periodLabel}
             value={period.mode}
             onChange={(m) => update(periodOf(m, period.date))}
             items={(['day', 'week', 'month'] as const).map((m) => ({
@@ -63,70 +77,96 @@ export function DashboardPage() {
               label: t.modes[m],
             }))}
           />
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
+          <div className={cn(control, 'overflow-hidden')}>
+            <button
+              type="button"
               aria-label={t.prev}
               onClick={() => update(shiftPeriod(period, -1, today))}
+              className="flex min-h-11 w-10 items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-900 sm:min-h-10"
             >
-              <ChevronLeft />
-            </Button>
-            <Input
-              type="date"
-              className="w-40"
-              value={period.date}
-              max={today}
-              aria-label={vi.reports.date}
-              onChange={(e) => e.target.value && update(periodOf(period.mode, e.target.value))}
-            />
-            <Button
-              variant="outline"
-              size="icon"
+              <ChevronLeft className="size-4" />
+            </button>
+            <label className="flex items-center gap-2 border-x border-slate-200 px-3">
+              <CalendarDays className="size-4 text-slate-400" aria-hidden />
+              <input
+                type="date"
+                className="min-h-10 bg-transparent text-sm outline-none"
+                value={period.date}
+                max={today}
+                aria-label={vi.reports.date}
+                onChange={(e) => e.target.value && update(periodOf(period.mode, e.target.value))}
+              />
+            </label>
+            <button
+              type="button"
               aria-label={t.next}
               disabled={period.to >= today}
               onClick={() => update(shiftPeriod(period, 1, today))}
+              className="flex min-h-11 w-10 items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-transparent sm:min-h-10"
             >
-              <ChevronRight />
-            </Button>
+              <ChevronRight className="size-4" />
+            </button>
           </div>
           {period.date !== today && (
-            <Button variant="ghost" size="sm" onClick={() => update(periodOf(period.mode, today))}>
+            <button
+              type="button"
+              onClick={() => update(periodOf(period.mode, today))}
+              className="min-h-10 rounded-xl px-3 text-sm font-medium text-primary hover:bg-secondary"
+            >
               {t.today}
-            </Button>
+            </button>
           )}
-          <Select
-            className="w-auto min-w-40"
-            value={team}
-            aria-label={vi.dashboard.goals.team}
-            onChange={(e) => update(period, e.target.value)}
-          >
-            <option value="">{t.allTeams}</option>
-            {teams.data?.map((tm) => (
-              <option key={tm.id} value={tm.id}>
-                {tm.name}
-              </option>
-            ))}
-          </Select>
+          <label className={cn(control, 'px-3')}>
+            <select
+              className="min-h-10 bg-transparent pr-1 text-sm outline-none"
+              value={team}
+              aria-label={t.goals.team}
+              onChange={(e) => update(period, e.target.value)}
+            >
+              <option value="">{t.allTeams}</option>
+              {teams.data?.map((tm) => (
+                <option key={tm.id} value={tm.id}>
+                  {tm.name}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
-        <p className="text-sm text-muted-foreground">{periodLabel(period)}</p>
-      </div>
+      </header>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <PeopleBlock date={day} team={team} />
-        <InboxBlock />
-      </div>
-      <ComplianceBlock
-        from={compliancePeriod.from}
-        to={compliancePeriod.to}
-        label={periodLabel(compliancePeriod)}
-        trendEnd={day}
-        team={team}
-      />
-      {canReadAllSales(salesActor) && <SalesBlock period={period} label={periodLabel(period)} />}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <GoalsBlock date={day} team={team} />
-        <CheckinMapBlock date={day} team={team} />
+      {/* Bento grid */}
+      <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-12">
+        {/* Mobile: thẻ chỉ số trượt ngang; từ sm: lưới 2 cột; lg: 4 cột */}
+        <div className="col-span-2 -mx-4 grid snap-x snap-mandatory [scrollbar-width:none] auto-cols-[78%] grid-flow-col gap-4 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:p-0 lg:col-span-12 lg:grid-cols-4 [&>*]:snap-start">
+          <KpiRow date={day} team={team} trendEnd={day} sales={showSales ? period : null} />
+        </div>
+
+        <PeopleBlock date={day} team={team} className="col-span-2 lg:col-span-8" />
+        <InboxBlock className="col-span-2 lg:col-span-4 lg:row-span-2" />
+        <ComplianceBlock
+          className="col-span-2 lg:col-span-8"
+          from={compliancePeriod.from}
+          to={compliancePeriod.to}
+          label={periodLabel(compliancePeriod)}
+          trendEnd={day}
+          team={team}
+        />
+
+        {showSales && (
+          <SalesBlocks
+            period={period}
+            label={periodLabel(period)}
+            classNames={{
+              revenue: 'col-span-2 lg:col-span-8',
+              leads: 'col-span-2 lg:col-span-4',
+              pipeline: 'col-span-2 lg:col-span-7',
+              lost: 'col-span-2 lg:col-span-5',
+            }}
+          />
+        )}
+
+        <GoalsBlock date={day} team={team} className="col-span-2 lg:col-span-5" />
+        <CheckinMapBlock date={day} team={team} className="col-span-2 lg:col-span-7" />
       </div>
     </div>
   )

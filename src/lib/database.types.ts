@@ -136,6 +136,8 @@ export type SalesSummary = {
   pipeline: { stage: LeadStage; count: number; value: number }[]
   lost_reasons: { reason: string | null; count: number }[]
   by_source: { source: string; count: number }[]
+  /** Doanh số từng ngày từ đầu tháng đến cuối kỳ (chỉ có ở fn_dashboard_sales) */
+  revenue_daily: { date: string; revenue: number }[]
 }
 
 type Table<Row, Required extends keyof Row = never> = {

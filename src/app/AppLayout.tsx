@@ -1,6 +1,6 @@
 import { LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useMatches } from 'react-router-dom'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { teamIds, useAuth, useMe } from '@/features/auth/auth-context'
@@ -47,8 +47,17 @@ function UserBox() {
   )
 }
 
+/** Route có thể khai báo `handle: { theme: 'premium', wide: true }` (vd /quan-ly) */
+interface RouteHandle {
+  theme?: 'premium'
+  wide?: boolean
+}
+
 export function AppLayout() {
   const me = useMe()
+  const handle = useMatches()
+    .map((m) => m.handle as RouteHandle | undefined)
+    .reduce<RouteHandle>((acc, h) => ({ ...acc, ...h }), {})
   const navUser = { role: me.role, teams: teamIds(me) }
   const items = visibleNav(navUser)
   const tabs = bottomTabs(navUser)
@@ -70,7 +79,12 @@ export function AppLayout() {
         <UserBox />
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div
+        className={cn(
+          'flex min-w-0 flex-1 flex-col',
+          handle.theme === 'premium' && 'theme-premium',
+        )}
+      >
         <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-2 border-b border-border bg-background/95 px-4 backdrop-blur">
           <div className="flex items-center gap-2 md:hidden">
             <img src="/favicon.svg" alt="" className="size-7" />
@@ -80,7 +94,12 @@ export function AppLayout() {
           <NotificationBell />
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 p-4 pb-24 md:pb-8">
+        <main
+          className={cn(
+            'mx-auto w-full flex-1 p-4 pb-24 md:pb-8',
+            handle.wide ? 'max-w-[1400px] sm:px-6 md:pt-8 lg:px-8' : 'max-w-6xl',
+          )}
+        >
           <Outlet />
         </main>
       </div>
