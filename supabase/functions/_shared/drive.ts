@@ -91,3 +91,88 @@ export function monthFolderName(date = new Date()): string {
   const vn = new Date(date.getTime() + 7 * 3600_000)
   return `${vn.getUTCFullYear()}-${String(vn.getUTCMonth() + 1).padStart(2, '0')}`
 }
+
+/** Tạo chuỗi thư mục con (tự tạo nếu chưa có), trả về ID thư mục cuối */
+export async function ensurePath(rootId: string, path: string[]): Promise<string> {
+  let parent = rootId
+  for (const name of path) parent = await ensureFolder(parent, name)
+  return parent
+}
+
+/** Mở phiên upload resumable; trình duyệt PUT file thẳng lên URL trả về (SPEC 4.2) */
+export async function createResumableSession(opts: {
+  parentId: string
+  name: string
+  mimeType: string
+  size: number
+  origin: string
+  description?: string
+}): Promise<string> {
+  const token = await getGoogleAccessToken([DRIVE_SCOPE])
+  const res = await fetch(
+    `${UPLOAD}/files?uploadType=resumable&supportsAllDrives=true&fields=id,name,mimeType,size,webViewLink`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-Upload-Content-Type': opts.mimeType,
+        'X-Upload-Content-Length': String(opts.size),
+        Origin: opts.origin,
+      },
+      body: JSON.stringify({
+        name: opts.name,
+        parents: [opts.parentId],
+        description: opts.description,
+      }),
+    },
+  )
+  if (!res.ok) throw new Error(`Drive ${res.status}: ${await res.text()}`)
+  const location = res.headers.get('Location')
+  if (!location) throw new Error('Drive không trả về phiên upload')
+  return location
+}
+
+export interface DriveFileFull extends DriveFile {
+  parents?: string[]
+  size?: string
+  trashed?: boolean
+}
+
+export async function getFile(
+  id: string,
+  fields = 'id,name,mimeType,size,parents,webViewLink,thumbnailLink,trashed',
+): Promise<DriveFileFull> {
+  const params = new URLSearchParams({ fields, supportsAllDrives: 'true' })
+  return (await (
+    await driveFetch(`${API}/files/${encodeURIComponent(id)}?${params}`)
+  ).json()) as DriveFileFull
+}
+
+/** Chuyển file sang thư mục khác (cùng Shared Drive) */
+export async function moveFile(
+  id: string,
+  toFolder: string,
+  fromFolders: string[],
+): Promise<DriveFileFull> {
+  const params = new URLSearchParams({
+    addParents: toFolder,
+    removeParents: fromFolders.join(','),
+    supportsAllDrives: 'true',
+    fields: 'id,parents,webViewLink',
+  })
+  return (await (
+    await driveFetch(`${API}/files/${encodeURIComponent(id)}?${params}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    })
+  ).json()) as DriveFileFull
+}
+
+/** Tải ảnh thumbnail (thumbnailLink cần token) với kích thước cạnh dài `size` */
+export async function fetchThumbnail(thumbnailLink: string, size: number): Promise<Response> {
+  const url = thumbnailLink.replace(/=s\d+$/, `=s${size}`)
+  const token = await getGoogleAccessToken([DRIVE_SCOPE])
+  return fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+}

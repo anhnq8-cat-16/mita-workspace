@@ -1,6 +1,7 @@
-import { ExternalLink, Trash2, X } from 'lucide-react'
+import { BookImage, ExternalLink, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import Markdown from 'react-markdown'
+import { Link } from 'react-router-dom'
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,7 @@ import { FieldError, Input, Label, Select, Textarea } from '@/components/ui/inpu
 import { Sheet } from '@/components/ui/sheet'
 import { ErrorBox, Spinner } from '@/components/ui/spinner'
 import { useGoalOptions } from '@/features/goals/api'
+import { useLibraryItems } from '@/features/library/api'
 import { vi } from '@/i18n/vi'
 import type { TaskRow, TaskStatus } from '@/lib/database.types'
 import { formatDateTimeVN, formatDateVN } from '@/lib/date-vn'
@@ -369,26 +371,42 @@ function Checklist({ task }: { task: TaskRow }) {
 function Links({ task }: { task: TaskRow }) {
   const { actor } = useTaskContext()
   const links = useLinks(task.id)
+  const library = useLibraryItems()
   const m = useLinkMutations(task.id)
   const [url, setUrl] = useState('')
   const [label, setLabel] = useState('')
   const canWork = canWorkTask(actor, task)
   if (!canWork && !links.data?.length) return null
+  const linked = new Set((links.data ?? []).map((l) => l.library_item_id).filter(Boolean))
+  const pickable = (library.data ?? []).filter((i) => i.status === 'approved' && !linked.has(i.id))
 
   return (
     <Section title={t.links}>
       <ul className="grid gap-1">
         {links.data?.map((l) => (
           <li key={l.id} className="flex min-h-11 items-center gap-2 text-sm">
-            <ExternalLink className="size-4 shrink-0 text-muted-foreground" />
-            <a
-              href={l.url ?? '#'}
-              target="_blank"
-              rel="noreferrer"
-              className="min-w-0 flex-1 truncate text-primary underline"
-            >
-              {l.label || l.url}
-            </a>
+            {l.library_item_id ? (
+              <BookImage className="size-4 shrink-0 text-muted-foreground" />
+            ) : (
+              <ExternalLink className="size-4 shrink-0 text-muted-foreground" />
+            )}
+            {l.library_item_id ? (
+              <Link
+                to={`/thu-vien?item=${l.library_item_id}`}
+                className="min-w-0 flex-1 truncate text-primary underline"
+              >
+                {l.label ?? vi.nav.library}
+              </Link>
+            ) : (
+              <a
+                href={l.url ?? '#'}
+                target="_blank"
+                rel="noreferrer"
+                className="min-w-0 flex-1 truncate text-primary underline"
+              >
+                {l.label || l.url}
+              </a>
+            )}
             {canWork && (
               <Button
                 variant="ghost"
@@ -402,6 +420,23 @@ function Links({ task }: { task: TaskRow }) {
           </li>
         ))}
       </ul>
+      {canWork && pickable.length > 0 && (
+        <Select
+          value=""
+          aria-label={vi.library.pickForTask}
+          onChange={(e) => {
+            const item = pickable.find((i) => i.id === e.target.value)
+            if (item) m.addLibrary.mutate({ itemId: item.id, label: item.title })
+          }}
+        >
+          <option value="">{vi.library.pickForTask}</option>
+          {pickable.map((i) => (
+            <option key={i.id} value={i.id}>
+              {vi.libraryKinds[i.kind]} · {i.title}
+            </option>
+          ))}
+        </Select>
+      )}
       {canWork && (
         <form
           className="grid gap-2 sm:grid-cols-[1fr_10rem_auto]"
@@ -429,7 +464,7 @@ function Links({ task }: { task: TaskRow }) {
           </Button>
         </form>
       )}
-      <FieldError>{(m.add.error ?? m.remove.error)?.message}</FieldError>
+      <FieldError>{(m.add.error ?? m.addLibrary.error ?? m.remove.error)?.message}</FieldError>
     </Section>
   )
 }

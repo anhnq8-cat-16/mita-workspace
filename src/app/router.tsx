@@ -7,6 +7,9 @@ import { CheckInPage } from '@/features/checkin/CheckInPage'
 import { DailyGate } from '@/features/daily/DailyGate'
 import { GoalsPage } from '@/features/goals/GoalsPage'
 import { HomePage } from '@/features/home/HomePage'
+import { LibraryPage } from '@/features/library/LibraryPage'
+import { PriceListPrint } from '@/features/products/PriceListPrint'
+import { ProductsPage } from '@/features/products/ProductsPage'
 import { DayDetailPage } from '@/features/reports/DayDetailPage'
 import { ReportsPage } from '@/features/reports/ReportsPage'
 import { SalesPage } from '@/features/sales/SalesPage'
@@ -32,7 +35,12 @@ export const router = createBrowserRouter([
         // /thu-vien: trang độc lập để gửi link riêng
         path: '/thu-vien',
         element: <LibraryLayout />,
-        children: [{ index: true, element: <ComingSoon navKey="library" milestone="M4" /> }],
+        children: [{ index: true, element: <LibraryPage /> }],
+      },
+      {
+        // Bảng giá bản in / PDF (không có menu)
+        path: '/san-pham/in',
+        element: <PriceListPrint />,
       },
       {
         element: <AppLayout />,
@@ -56,7 +64,7 @@ export const router = createBrowserRouter([
               </RequireNav>
             ),
           },
-          { path: 'san-pham', element: <ComingSoon navKey="products" milestone="M4" /> },
+          { path: 'san-pham', element: <ProductsPage /> },
           { path: 'bao-cao', element: <ReportsPage /> },
           { path: 'bao-cao/:userId/:date', element: <DayDetailPage /> },
           {

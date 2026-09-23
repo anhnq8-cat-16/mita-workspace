@@ -292,6 +292,15 @@ export function useLinkMutations(taskId: string) {
       },
       onSuccess: invalidate,
     }),
+    addLibrary: useMutation({
+      mutationFn: async (input: { itemId: string; label: string }) => {
+        const { error } = await supabase
+          .from('task_links')
+          .insert({ task_id: taskId, library_item_id: input.itemId, label: input.label })
+        throwIfError(error)
+      },
+      onSuccess: invalidate,
+    }),
     remove: useMutation({
       mutationFn: async (id: string) => {
         const { error } = await supabase.from('task_links').delete().eq('id', id)

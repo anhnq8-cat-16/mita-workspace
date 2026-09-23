@@ -54,10 +54,15 @@ Làm sau khi xong `docs/setup-google.md` mục 4 (service account + domain-wide 
 **5.2 Deploy function** (máy có Node.js, đã `npx supabase link` ở mục 2):
 ```bash
 npx supabase functions deploy notify
-npx supabase functions deploy checkin-photo   # từ M3: tải ảnh check-in lên Drive
+npx supabase functions deploy checkin-photo          # M3: ảnh check-in lên Drive
+npx supabase functions deploy drive-upload-init      # M4: thư viện – mở phiên upload
+npx supabase functions deploy drive-upload-complete  # M4: thư viện – ghi nhận file
+npx supabase functions deploy drive-move             # M4: duyệt / chuyển thư mục
+npx supabase functions deploy drive-thumb            # M4: ảnh thu nhỏ
 ```
+(Hoặc deploy tất cả một lần: `npx supabase functions deploy`.)
 File `supabase/config.toml` đã tắt kiểm tra JWT cho `notify` (function tự kiểm tra `x-cron-secret`). `checkin-photo` kiểm tra đăng nhập của người gọi.
-Thêm secret `APP_ORIGIN` = `https://work.mitaexport.com` để trình duyệt được phép gọi `checkin-photo` (CORS).
+Thêm secret `APP_ORIGIN` = `https://work.mitaexport.com`: trình duyệt được phép gọi các function (CORS) và phiên upload Drive chỉ nhận file từ đúng địa chỉ này.
 
 **5.3 Cho database biết địa chỉ function** – SQL Editor, chạy 1 lần (thay giá trị thật):
 ```sql

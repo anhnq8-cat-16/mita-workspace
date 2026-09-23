@@ -1,6 +1,6 @@
 # Vận hành Mita Workspace
 
-> Tài liệu được bổ sung theo từng milestone. Bản hiện tại: M3.
+> Tài liệu được bổ sung theo từng milestone. Bản hiện tại: M4.
 
 ## Thêm người dùng mới
 1. Đăng nhập bằng tài khoản admin → **Cài đặt → Người dùng → Mời người dùng**.
@@ -54,6 +54,15 @@ Mọi thay đổi được ghi vào nhật ký (audit_log).
 - **Quản lý xem check-in:** `/check-in` → tab *Team*: chọn ngày/người → bản đồ + dòng thời gian, so với *Lịch trình dự kiến* trong kế hoạch sáng.
 - **Báo cáo cuối ngày của Sale** tự điền: số điểm đã gặp (check-in), lead mới, lead đã liên hệ, báo giá đã gửi, đơn chốt, doanh số – vẫn sửa được trước khi nộp.
 
+## Thư viện & sản phẩm (M4)
+- **Link riêng:** `https://work.mitaexport.com/thu-vien` – trang gọn, không có menu công việc, vẫn phải đăng nhập tài khoản công ty. Gửi link 1 tư liệu: mở tư liệu → copy địa chỉ (dạng `/thu-vien?item=…`).
+- **Tải lên** (mọi người): tab *Tải lên* → kéo-thả nhiều file (tối đa 2GB/file, có thanh tiến độ, hủy được) → chọn sản phẩm (hoặc *Tư liệu chung*), kênh sử dụng, tag → *Tải lên*. File vào `00_Cho-duyet`, trạng thái *Chờ duyệt*. Video nên đưa lên YouTube (chế độ không công khai) rồi dán link ở mục *Thêm video YouTube* – chỉ tải file video gốc khi thật cần.
+- **Duyệt:** trưởng nhóm Marketing (thư viện chung), trưởng nhóm Sale (tài liệu nội bộ Sales), quản lý, admin – tab *Chờ duyệt*: chọn thư mục đích (đã gợi ý theo sản phẩm/loại, xem trước đường dẫn) → *Duyệt*; hoặc *Từ chối* kèm lý do (người tải lên nhận thông báo). Đổi team được duyệt: `library_approver_teams`.
+- **Quyền xem:** thư viện chung – mọi người; *Tài liệu nội bộ Sales* – team Sale + quản lý/admin. Mở/tải file trên Drive dùng quyền thành viên Shared Drive (nhóm `all@`, `sales@`…).
+- **Sản phẩm & bảng giá** (`/san-pham`): mọi người xem. Quản lý/admin bấm *Sửa bảng giá* → sửa giá lẻ/giá buôn nhiều dòng → *Lưu*; mỗi thay đổi lưu vào *Lịch sử giá* và hiện "Cập nhật lần cuối: ngày – người". Admin thêm/sửa thông tin sản phẩm.
+- **Bảng giá PDF:** *Xuất bảng giá PDF* → *In / Lưu PDF* → chọn máy in "Lưu dưới dạng PDF". Ngày hiệu lực = ngày in; ghi chú cuối trang sửa ở `price_list_note`.
+- Gắn tư liệu vào công việc: trong chi tiết việc → *Tư liệu* → *Gắn tư liệu từ thư viện…*.
+
 ## Đổi giờ, ngày lễ, ngày làm bù
 - Giờ hạn chót/nhắc: **Cài đặt → Thông số** (`plan_deadline`, `plan_reminder_time`, `report_open_time`, `report_reminder_time`, `report_deadline`, `report_missed_at`, `summary_evening_time`). Có hiệu lực ngay, không cần sửa gì khác.
 - Thứ làm việc hằng tuần: `workdays` (mặc định `[1,2,3,4,5,6]` = thứ Hai → thứ Bảy).
@@ -74,7 +83,9 @@ Mọi thay đổi được ghi vào nhật ký (audit_log).
 | Không có email nhắc việc | SQL Editor: `select status, last_error from outbox order by created_at desc limit 10;`. `pending` mãi → kiểm tra Vault (`project_url`, `cron_secret`) và function `notify` đã deploy. `failed` + lỗi `unauthorized_client` → domain-wide delegation chưa có hiệu lực/sai Client ID hoặc scope. |
 | Nhắc sai giờ / không nhắc | `select * from cron.job;` phải có `mita-tick`. `select * from cron_runs order by ran_at desc;` xem job đã chạy và lỗi (cột `error`). Giờ trong Thông số là giờ Việt Nam. |
 | Nhân viên bị chặn ở màn Kế hoạch dù đang nghỉ | Nhân viên bấm *Hôm nay tôi nghỉ / đi công tác* ngay trên màn hình đó. Nếu ngày nghỉ đã bị từ chối thì vẫn phải nộp kế hoạch. |
-| Check-in báo "Chưa cấu hình thư mục CheckIns" | Nhập `drive.folders` = `{"checkins": "<ID thư mục>"}` (xem `docs/setup-google.md` mục 2). |
+| Check-in/Tải lên báo "Chưa cấu hình … drive.folders" | Nhập `drive.folders` = `{"library": "<ID>", "sales_private": "<ID>"}` (xem `docs/setup-google.md` mục 2). |
+| Tải lên đứng ở 0% / lỗi CORS | Secret `APP_ORIGIN` phải đúng địa chỉ đang mở ứng dụng (`https://work.mitaexport.com`, không có `/` cuối). |
+| Thư viện không hiện ảnh thu nhỏ | Drive cần vài phút tạo ảnh thu nhỏ cho file mới; file thiết kế (AI, PSD) có thể không có ảnh thu nhỏ. |
 | Check-in báo lỗi Drive 403/404 | `sale05@mitaexport.com` chưa là *Người quản lý nội dung* của `MITA Sales Private`, hoặc chưa ủy quyền scope `drive` (domain-wide delegation). |
 | Không lấy được GPS | Điện thoại bật Vị trí; trình duyệt cho phép truy cập vị trí cho `work.mitaexport.com` (Safari: Cài đặt → Quyền riêng tư → Dịch vụ định vị → Safari). |
 | Cần sửa báo cáo đã nộp | Không sửa được (chủ ý). Nhân viên thêm *Bổ sung* dưới báo cáo. |

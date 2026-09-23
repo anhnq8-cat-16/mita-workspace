@@ -32,11 +32,14 @@ Thông tin công ty: domain `mitaexport.com`; tài khoản hệ thống `sale05@
    | `MITA Library` | `all@` → Người xem; `mkt@`, `managers@` → Người quản lý nội dung; `sale05@mitaexport.com` → Người quản lý nội dung |
    | `MITA Sales Private` | `sales@`, `managers@` → Người quản lý nội dung; `sale05@mitaexport.com` → Người quản lý nội dung |
    | `MITA Backup` | `managers@` → Người quản lý nội dung; `sale05@mitaexport.com` → Người quản lý nội dung |
-3. **Thư mục ảnh check-in (cần từ M3):** mở Shared Drive `MITA Sales Private` → **+ Mới → Thư mục** → tên `CheckIns`. Tạo thêm `Bao-gia`, `Hop-dong`.
-   - Mở thư mục `CheckIns`, nhìn thanh địa chỉ trình duyệt: `https://drive.google.com/drive/folders/`**`1AbCdEf...`** – phần sau `folders/` là **ID thư mục**.
-   - Vào ứng dụng → **Cài đặt → Thông số → `drive.folders`**, nhập: `{"checkins": "1AbCdEf..."}` → **Lưu**.
-   - Thư mục con theo tháng (`2026-09`, `2026-10`…) được hệ thống tự tạo khi có ảnh.
-4. Các thư mục của `MITA Library` sẽ hướng dẫn ở M4 (cũng nhập vào `drive.folders`).
+3. **Khai báo ID 2 Shared Drive cho ứng dụng (cần từ M3/M4):**
+   - Mở Shared Drive `MITA Library`, nhìn thanh địa chỉ: `https://drive.google.com/drive/folders/`**`0AbCdEf...`** – phần sau `folders/` là **ID Shared Drive**. Làm tương tự với `MITA Sales Private`.
+   - Vào ứng dụng → **Cài đặt → Thông số → `drive.folders`**, nhập:
+     `{"library": "<ID MITA Library>", "sales_private": "<ID MITA Sales Private>"}` → **Lưu**.
+   - **Không cần tạo thư mục bằng tay.** Hệ thống tự tạo khi cần:
+     - `MITA Library/00_Cho-duyet`, `01_San-pham/<Dòng SP>/{Anh, Video, Mo-ta}`, `02_Ban-hang`, `03_Thuong-hieu`, `04_Su-kien/<YYYY-MM Tên sự kiện>`
+     - `MITA Sales Private/00_Cho-duyet`, `CheckIns/<YYYY-MM>`, `Bao-gia`, `Hop-dong`, `Tai-lieu-ban-hang`
+   - Nếu muốn ảnh check-in vào thư mục khác, thêm khóa `"checkins": "<ID thư mục>"`.
 
 ## 3. Google Cloud – đăng nhập Google (cần ngay cho M0)
 

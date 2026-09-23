@@ -1,6 +1,6 @@
 // Edge Function `checkin-photo`: nhận ảnh check-in (đã nén ở trình duyệt), tải lên
 // Shared Drive "MITA Sales Private/CheckIns/<YYYY-MM>". Trả về id + link Drive.
-// Thư mục gốc lấy từ settings.drive.folders.checkins.
+// Thư mục gốc: settings.drive.folders.checkins, hoặc <sales_private>/CheckIns.
 import { corsHeaders, json } from '../_shared/cors.ts'
 import { getSetting, HttpError, requireCaller, serviceClient } from '../_shared/auth.ts'
 import { ensureFolder, monthFolderName, uploadSmallFile } from '../_shared/drive.ts'

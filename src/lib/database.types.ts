@@ -24,6 +24,10 @@ export type CustomerType =
   'cafe' | 'agent' | 'retail_store' | 'corporate_gift' | 'individual' | 'fruit_b2b' | 'other'
 export type CustomerStatus = 'active' | 'inactive'
 export type OrderStatus = 'draft' | 'confirmed' | 'delivered' | 'cancelled'
+export type ProductCategory = 'coffee' | 'accessory' | 'gift_set' | 'fruit'
+export type LibraryKind = 'image' | 'video' | 'document' | 'design' | 'youtube'
+export type SharedDriveKind = 'library' | 'sales_private'
+export type LibraryStatus = 'pending' | 'approved' | 'rejected'
 
 type Table<Row, Required extends keyof Row = never> = {
   Row: Row
@@ -323,6 +327,61 @@ export type CustomerDirectoryRow = {
   lng: number | null
 }
 
+export type ProductRow = {
+  id: string
+  sku: string
+  name: string
+  line: string | null
+  category: ProductCategory
+  origin: string | null
+  flavor_notes: string | null
+  pack_size_g: number | null
+  retail_price_vnd: number | null
+  wholesale_price_vnd: number | null
+  is_active: boolean
+  description: string | null
+  position: number
+  updated_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ProductPriceHistoryRow = {
+  id: string
+  product_id: string
+  old_retail: number | null
+  new_retail: number | null
+  old_wholesale: number | null
+  new_wholesale: number | null
+  changed_by: string | null
+  changed_at: string
+}
+
+export type LibraryItemRow = {
+  id: string
+  title: string
+  description: string | null
+  kind: LibraryKind
+  drive_file_id: string | null
+  youtube_url: string | null
+  mime_type: string | null
+  size_bytes: number | null
+  web_view_link: string | null
+  shared_drive: SharedDriveKind
+  folder_path: string | null
+  folder_id: string | null
+  product_id: string | null
+  tags: string[]
+  channels: string[]
+  status: LibraryStatus
+  reject_reason: string | null
+  uploaded_by: string | null
+  approved_by: string | null
+  approved_at: string | null
+  created_at: string
+  updated_at: string
+}
+
 export type DailyPlanRow = {
   id: string
   user_id: string
@@ -465,6 +524,9 @@ export interface Database {
       customers: Table<CustomerRow, 'name'>
       orders: Table<OrderRow, 'customer_id'>
       check_ins: Table<CheckInRow, 'lat' | 'lng'>
+      products: Table<ProductRow, 'sku' | 'name' | 'category'>
+      product_price_history: Table<ProductPriceHistoryRow, 'product_id'>
+      library_items: Table<LibraryItemRow, 'title' | 'kind'>
     }
     Views: { [_ in never]: never }
     Functions: {
@@ -537,6 +599,7 @@ export interface Database {
       fn_my_submitted_leads: { Args: Record<string, never>; Returns: SubmittedLeadRow[] }
       fn_customer_directory: { Args: { p_q?: string }; Returns: CustomerDirectoryRow[] }
       fn_report_autofill: { Args: { p_date?: string | null }; Returns: Json }
+      fn_can_approve_library: { Args: { p_drive: SharedDriveKind }; Returns: boolean }
     }
     Enums: {
       role_enum: Role
@@ -554,6 +617,10 @@ export interface Database {
       customer_type: CustomerType
       customer_status: CustomerStatus
       order_status: OrderStatus
+      product_category: ProductCategory
+      library_kind: LibraryKind
+      shared_drive_kind: SharedDriveKind
+      library_status: LibraryStatus
     }
     CompositeTypes: { [_ in never]: never }
   }

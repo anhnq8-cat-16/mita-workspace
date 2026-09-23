@@ -6,6 +6,7 @@
 **Trạng thái:**
 - M0 Nền tảng: đăng nhập Google, lời mời/kích hoạt, phân quyền, layout theo vai trò.
 - M1 Kỷ luật ngày: cổng kế hoạch ngày, báo cáo cuối ngày + bổ sung, review, nghỉ phép, ngày lễ/ngày làm bù, chuyển việc tồn, nhắc việc & tóm tắt tự động (email Gmail API + Google Chat).
+- M4 Thư viện & sản phẩm: upload resumable lên Shared Drive (tiến độ, hủy, file lớn), duyệt + tự chuyển thư mục đích, ảnh thu nhỏ có kiểm tra quyền, YouTube, `/thu-vien` độc lập; sản phẩm + bảng giá (sửa hàng loạt, lịch sử giá, in/PDF), 37 sản phẩm seed (giá để trống).
 - M3 Sales: lead (kiểm tra trùng, SLA, hàng chờ, phân công, pipeline kéo-thả, hoạt động, chốt/mất, gộp trùng), khách hàng + bản đồ, đơn hàng + KPI tháng, check-in GPS + ảnh lên Drive, báo cáo Sale tự điền.
 - M2 Công việc & mục tiêu: Kanban kéo-thả realtime (5 chế độ xem, bộ lọc), chi tiết việc (Markdown, checklist, bình luận @nhắc tên, link tư liệu, lịch sử), việc nhạy cảm, giao việc hàng loạt, mục tiêu tuần.
 
