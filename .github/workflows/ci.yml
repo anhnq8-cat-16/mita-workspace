@@ -66,34 +66,24 @@ jobs:
         working-directory: supabase/functions
 
   database:
-    name: Migrations + RLS tests (Supabase)
+    # Postgres 16 có sẵn trên runner + pgTAP (không tải image Docker: registry của Supabase
+    # hay giới hạn lượt tải từ GitHub Actions). Cùng cách chạy với `npm run test:rls` ở máy.
+    # Muốn chạy trên Supabase đầy đủ: `npx supabase start && npx supabase test db` (cần Docker).
+    name: Migrations + RLS tests (Postgres 16 + pgTAP)
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
     steps:
       - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
-      - name: Đăng nhập ghcr.io (tải ẩn danh image Supabase bị giới hạn lượt)
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-      - name: Start Supabase (Postgres + Auth thật)
-        # Registry image đôi khi giới hạn lượt tải (toomanyrequests) → thử lại tối đa 3 lần
+      - name: Cài pgTAP + pg_prove
         run: |
-          n=0
-          until supabase db start; do
-            n=$((n+1))
-            if [ "$n" -ge 3 ]; then exit 1; fi
-            echo "Khởi động Supabase lỗi, thử lại lần $((n+1)) sau $((n*30)) giây…"
-            supabase stop --no-backup || true
-            sleep $((n*30))
-          done
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-16-pgtap libtap-parser-sourcehandler-pgtap-perl
+      - name: Khởi động Postgres
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres psql -q -c "alter user postgres password 'postgres'"
+      - name: Chạy migration + test RLS (pgTAP)
         env:
-          SUPABASE_AUTH_GOOGLE_CLIENT_ID: ci
-          SUPABASE_AUTH_GOOGLE_SECRET: ci
-      - name: Chạy test RLS (pgTAP)
-        run: supabase test db
-        env:
-          SUPABASE_AUTH_GOOGLE_CLIENT_ID: ci
-          SUPABASE_AUTH_GOOGLE_SECRET: ci
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: bash supabase/tests/run-local.sh

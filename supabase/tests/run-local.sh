@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Chạy migration + test RLS trên Postgres cục bộ (không cần Docker/Supabase CLI).
 # Yêu cầu: psql, pg_prove, extension pgtap. Biến môi trường: PGHOST, PGUSER, PGPASSWORD...
-# CI dùng Supabase thật: `supabase db start && supabase test db`.
+# CI cũng chạy script này (Postgres 16 của runner). Supabase đầy đủ: `supabase start && supabase test db`.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 DB="${TEST_DB:-mita_test}"
