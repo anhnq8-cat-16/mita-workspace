@@ -22,6 +22,16 @@
 
 File `public/_redirects` đã cấu hình để mọi đường dẫn (ví dụ `/thu-vien`) trả về ứng dụng.
 
+### Nếu Cloudflare tạo thành **Worker** thay vì Pages
+Giao diện mới của Cloudflare hay mặc định tạo *Worker* (biểu tượng ◇, có chữ "Workers build minutes"). Vẫn dùng được – repo đã có sẵn `wrangler.jsonc` (đưa thư mục `dist` lên, mọi đường dẫn trả về ứng dụng):
+1. Mở ứng dụng → **Settings → Build**:
+   - **Build command:** `npm run build`
+   - **Deploy command:** `npx wrangler deploy`
+   - **Branch control → Production branch:** `main`
+2. Cũng trong **Settings → Build**, mục **Variables and secrets** (biến *lúc build* – **không** phải mục Variables ở phần Runtime): thêm `NODE_VERSION`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GOOGLE_HD` như bảng trên.
+3. **Deployments → Retry build** (hoặc đẩy commit mới). Địa chỉ tạm có dạng `https://mita-workspace.<tên-tài-khoản>.workers.dev`.
+4. Gắn tên miền: **Settings → Domains & Routes → Add → Custom domain** → `work.mitaexport.com`.
+
 ## 2. Gắn tên miền `work.mitaexport.com`
 1. Trong project Pages → tab **Custom domains → Set up a custom domain** → nhập `work.mitaexport.com` → **Continue**.
 2. **Nếu domain đang quản lý DNS tại Cloudflare:** bấm **Activate domain**, xong.

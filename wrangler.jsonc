@@ -1,0 +1,10 @@
+// Cấu hình cho Cloudflare Workers (static assets). Cloudflare Pages không cần file này.
+// "name" phải trùng tên ứng dụng trên Cloudflare.
+{
+  "name": "mita-workspace",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+  },
+}
