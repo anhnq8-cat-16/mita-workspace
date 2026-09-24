@@ -20,7 +20,7 @@
    | `VITE_GOOGLE_HD` | `mitaexport.com` |
 6. Bấm **Save and Deploy**. Sau ~1–2 phút có địa chỉ tạm `https://mita-workspace.pages.dev`.
 
-File `public/_redirects` đã cấu hình để mọi đường dẫn (ví dụ `/thu-vien`) trả về ứng dụng.
+Mọi đường dẫn (ví dụ `/thu-vien`) tự trả về ứng dụng: Pages làm mặc định khi không có `404.html`; Workers dùng `not_found_handling` trong `wrangler.jsonc`. **Không** thêm file `_redirects` kiểu `/* /index.html 200` – Workers báo lỗi "Infinite loop".
 
 ### Nếu Cloudflare tạo thành **Worker** thay vì Pages
 Giao diện mới của Cloudflare hay mặc định tạo *Worker* (biểu tượng ◇, có chữ "Workers build minutes"). Vẫn dùng được – repo đã có sẵn `wrangler.jsonc` (đưa thư mục `dist` lên, mọi đường dẫn trả về ứng dụng):
