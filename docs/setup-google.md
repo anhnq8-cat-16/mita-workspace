@@ -4,6 +4,10 @@ Hướng dẫn cho người không chuyên. Làm lần lượt từng bước. C
 
 Thông tin công ty: domain `mitaexport.com`; tài khoản hệ thống `sale05@mitaexport.com` (gửi email nhắc việc, quản lý file trên Shared Drive). Ứng dụng chạy tại `https://work.mitaexport.com`.
 
+> **Hai tài khoản, hai việc khác nhau:**
+> - **Tài khoản admin** (Super Admin, hiện là `sale@mitaexport.com`): chỉ dùng để *cài đặt* – Admin Console, Google Cloud, ủy quyền toàn miền. Ứng dụng không đăng nhập hay gửi gì bằng tài khoản này.
+> - **Tài khoản hệ thống** `sale05@mitaexport.com` (`GOOGLE_SYSTEM_USER`): tài khoản thường, **không cần quyền admin**. Service account "đứng tên" tài khoản này để gửi email nhắc việc và tạo file trên Shared Drive (nhờ ủy quyền toàn miền do admin cấp).
+
 > **Milestone 0 chỉ cần mục 3 (đăng nhập Google).** Các mục 1, 2, 4, 5 cần từ M1 (email) và M3/M4 (Drive), có thể làm sau.
 
 ---
