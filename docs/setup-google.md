@@ -67,11 +67,12 @@ Thông tin công ty: domain `mitaexport.com`; tài khoản hệ thống `sale05@
 1. **Bật API:** Menu ☰ → **APIs & Services → Library**. Tìm và bấm **Enable** cho: `Google Drive API`, `Gmail API`.
 2. **Tạo service account:** Menu ☰ → **IAM & Admin → Service Accounts → + Create service account**. Tên `mita-system`. Bấm **Create and continue** → bỏ qua phần quyền → **Done**.
 3. **Tạo key JSON:** bấm vào service account vừa tạo → tab **Keys → Add key → Create new key → JSON → Create**. File `.json` tải về máy – **giữ bí mật**, chỉ nhập vào Supabase secrets.
-   - Nếu báo lỗi *"Service account key creation is disabled"* (org policy `iam.disableServiceAccountKeyCreation`, tổ chức mới thường bật sẵn):
-     1. Cần quyền **Organization Policy Administrator** (Super Admin tự cấp ở **IAM & Admin → IAM**, chọn cấp tổ chức, thêm vai trò này cho mình).
-     2. Menu ☰ → **IAM & Admin → Organization Policies**, đảm bảo đang chọn project `mita-workspace`.
-     3. Tìm `Disable service account key creation` → **Manage policy** → **Override parent's policy** → **Add rule → Enforcement: Off** → **Set policy**.
-     4. Quay lại bước 3.
+   - Nếu báo lỗi *"Service account key creation is disabled"* (org policy `iam.managed.disableServiceAccountKeyCreation` hoặc bản cũ `iam.disableServiceAccountKeyCreation`, tổ chức mới thường bật sẵn):
+     1. Cần quyền **Organization Policy Administrator**: **IAM & Admin → IAM**, ô chọn project trên cùng chuyển sang **tổ chức `mitaexport.com`** → **Grant access** → *New principals*: email của bạn → *Role*: `Organization Policy Administrator` → **Save**.
+     2. Chuyển ô chọn về lại project (vd `mita-workspace`) → Menu ☰ → **IAM & Admin → Organization Policies**.
+     3. Ô lọc gõ `service account key creation`. Có thể thấy 2 dòng (bản *managed* và bản cũ) – làm với dòng có ID trùng ID trong thông báo lỗi (hoặc làm cả hai): bấm vào → **Manage policy** → **Override parent's policy** → **Add rule → Enforcement: Off** → **Set policy**.
+     4. Đợi 2–5 phút rồi quay lại bước 3.
+     5. Tạo key xong, nên bật lại chặn (**Manage policy → Inherit parent's policy → Set policy**) – key đã tạo vẫn dùng bình thường.
 4. Mở tab **Details** của service account, sao chép **Unique ID / OAuth 2 Client ID** (dãy số dài).
 5. **Domain-wide delegation:** vào <https://admin.google.com> → **Bảo mật → Truy cập và kiểm soát dữ liệu → Kiểm soát API → Quản lý ủy quyền trên toàn miền** (Security → Access and data control → API controls → Manage Domain Wide Delegation) → **Thêm mới**:
    - **Client ID:** dãy số ở bước 4.
