@@ -49,6 +49,10 @@ Mọi thay đổi được ghi vào nhật ký (audit_log).
 - **Mốc tự xong** khi mọi việc gắn với mốc đã *Hoàn thành* (mở lại việc thì mốc mở lại). Trưởng nhóm cũng đánh dấu xong bằng tay (mốc đánh dấu tay không tự mở lại).
 - **KPI tuần:** tab *Mục tiêu tuần* và dashboard hiện "Mốc chiến dịch tuần này: x/y mốc xong" theo từng team.
 - **Đẩy nhanh:** khi mọi mốc đến tuần này đã xong mà còn mốc ở tuần sau, người phụ trách chiến dịch nhận thông báo *đang vượt tiến độ* và chiến dịch hiện nút **Đẩy nhanh các mốc sau**: mốc chưa xong gần nhất kéo về tuần này, các mốc sau giữ khoảng cách; hạn của các việc chưa xong gắn với các mốc đó dời sớm tương ứng (không sớm hơn hôm nay); người phụ trách/được giao được báo.
+- **Thông báo tự động về chiến dịch:**
+  - Sáng thứ Hai (`weekly_kickoff_time`): mỗi người phụ trách mốc nhận danh sách mốc của mình trong tuần. Team đã có mốc chiến dịch trong tuần thì không bị nhắc "lập mục tiêu tuần".
+  - Cuối ngày (`report_missed_at`): mốc đến hạn hôm đó mà chưa xong → báo người phụ trách mốc và người phụ trách chiến dịch (chuông + email).
+  - Email báo cáo tuần cho quản lý có mục **CHIẾN DỊCH**: tiến độ từng chiến dịch đang chạy và danh sách mốc trễ.
 - **Quyền:** nhân viên xem chiến dịch của team mình, không thêm/sửa mốc, không đổi mốc hay kết quả cần đạt của việc được giao. Team khác không thấy (trừ quản lý/admin).
 - **Kanban:** mỗi cột trạng thái 1 màu (Cần làm xám · Đang làm tím · Chờ duyệt vàng · Hoàn thành xanh lá · Bị chặn đỏ); mỗi thẻ có dải màu bên trái theo team (Sale nội địa xanh dương · Marketing cam · Xuất khẩu xanh ngọc) kèm tên team, và chip tên chiến dịch · mốc nếu có.
 

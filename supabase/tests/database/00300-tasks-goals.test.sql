@@ -152,7 +152,7 @@ select throws_ok(
 -- Thứ Hai tuần sau: chốt tuần cũ (1/2 → trượt) + nhắc lead team chưa có mục tiêu
 select tests.clear_authentication();
 select is(
-  fn_job_weekly_kickoff('2026-10-05') - 'scores', '{"closed": 1, "reminded": 3}'::jsonb,
+  fn_job_weekly_kickoff('2026-10-05') - array['scores', 'milestone_owners'], '{"closed": 1, "reminded": 3}'::jsonb,
   'weekly_kickoff: chốt 1 mục tiêu (trượt), nhắc lead Sale (Trang, Mai) + lead MKT (Trang)'
 );
 

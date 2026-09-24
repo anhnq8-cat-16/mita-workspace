@@ -45,11 +45,97 @@ const settings = [
 export interface MockState {
   planSubmits: unknown[]
   reportSubmits: unknown[]
+  /** Các lệnh ghi bảng (POST/PATCH): { table, method, body } */
+  writes: { table: string; method: string; body: unknown }[]
 }
+
+const week = (() => {
+  const d = new Date(`${today}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7))
+  return d.toISOString().slice(0, 10)
+})()
+const plusDays = (date: string, n: number) =>
+  new Date(Date.parse(`${date}T00:00:00Z`) + n * 86400e3).toISOString().slice(0, 10)
+
+const campaign = {
+  id: 'cp1',
+  team_id: 'marketing',
+  title: 'Set quà cà phê 20/10',
+  goal: 'Bán 300 set trước 20/10',
+  description: 'Kế hoạch 2 tuần',
+  start_date: week,
+  end_date: plusDays(week, 13),
+  status: 'active',
+  owner_id: 'u-admin',
+  links: [{ label: 'Brief', url: 'https://docs.google.com/document/d/x' }],
+  created_by: 'u-admin',
+}
+const milestones = [
+  {
+    id: 'm1',
+    campaign_id: 'cp1',
+    title: 'Chuẩn bị bao bì',
+    description: null,
+    week_start: week,
+    due_date: plusDays(week, 5),
+    owner_id: 'u-long',
+    links: [],
+    position: 1,
+    done_at: null,
+    done_by: null,
+  },
+  {
+    id: 'm2',
+    campaign_id: 'cp1',
+    title: 'Tính giá bán',
+    description: null,
+    week_start: plusDays(week, 7),
+    due_date: plusDays(week, 12),
+    owner_id: null,
+    links: [],
+    position: 2,
+    done_at: null,
+    done_by: null,
+  },
+]
+const taskRow = (p: Record<string, unknown>) => ({
+  description: null,
+  team_id: 'marketing',
+  assignee_id: 'u-long',
+  created_by: 'u-admin',
+  weekly_goal_id: null,
+  milestone_id: null,
+  expected_result: null,
+  status: 'todo',
+  priority: 'normal',
+  start_date: null,
+  due_date: null,
+  estimate_minutes: null,
+  position: 1,
+  is_sensitive: false,
+  is_off_plan: false,
+  carried_over_count: 0,
+  completed_at: null,
+  approved_by: null,
+  blocked_reason: null,
+  created_at: '2026-09-20T02:00:00Z',
+  updated_at: '2026-09-20T02:00:00Z',
+  ...p,
+})
+const tasks = [
+  taskRow({
+    id: 't1',
+    title: 'Đặt in hộp quà',
+    milestone_id: 'm1',
+    status: 'doing',
+    expected_result: '300 hộp đúng mẫu',
+  }),
+  taskRow({ id: 't2', title: 'Gọi 10 quán cũ', team_id: 'sales_domestic', assignee_id: 'u-admin' }),
+]
 
 export async function mockSupabase(page: Page, who: keyof typeof USERS): Promise<MockState> {
   const me = USERS[who]
-  const state: MockState = { planSubmits: [], reportSubmits: [] }
+  const state: MockState = { planSubmits: [], reportSubmits: [], writes: [] }
   let plan: Record<string, unknown> | null = null
   let report: Record<string, unknown> | null = null
 
@@ -172,6 +258,31 @@ export async function mockSupabase(page: Page, who: keyof typeof USERS): Promise
       revenue_daily: [],
     }),
     fn_weekly_goals: () => [],
+    fn_campaigns: () => [
+      {
+        ...campaign,
+        milestone_total: 2,
+        milestone_done: 0,
+        current_week_total: 1,
+        current_week_done: 0,
+        can_pull: false,
+        can_manage: me.role === 'admin',
+      },
+    ],
+    fn_milestones: (b) =>
+      milestones
+        .filter(
+          (m) =>
+            (!b.p_campaign || m.campaign_id === b.p_campaign) &&
+            (!b.p_week || m.week_start === b.p_week),
+        )
+        .map((m) => ({
+          ...m,
+          campaign_title: campaign.title,
+          team_id: campaign.team_id,
+          task_total: m.id === 'm1' ? 1 : 0,
+          task_done: 0,
+        })),
   }
 
   const tables: Record<string, (url: URL) => unknown[]> = {
@@ -188,6 +299,9 @@ export async function mockSupabase(page: Page, who: keyof typeof USERS): Promise
       { id: 'sales_domestic', name: 'Sale nội địa' },
     ],
     settings: () => settings,
+    campaigns: () => [campaign],
+    campaign_milestones: () => milestones,
+    tasks: () => tasks,
   }
 
   await page.route(`${SUPABASE_URL}/**`, async (route: Route) => {
@@ -203,6 +317,10 @@ export async function mockSupabase(page: Page, who: keyof typeof USERS): Promise
       return json(200, fn ? fn(body) : null)
     }
     if (url.pathname.startsWith('/auth/')) return json(200, {})
+    if (req.method() !== 'GET' && req.method() !== 'HEAD') {
+      state.writes.push({ table: path, method: req.method(), body: req.postDataJSON() })
+      return json(201, [])
+    }
     const rows = tables[path]?.(url) ?? []
     const single = (req.headers()['accept'] ?? '').includes('vnd.pgrst.object')
     return json(200, single ? (rows[0] ?? null) : rows)
