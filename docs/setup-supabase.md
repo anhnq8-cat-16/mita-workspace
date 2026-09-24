@@ -11,14 +11,27 @@
 
 ## 2. Tạo bảng (chạy migration)
 
-**Cách A – bằng dòng lệnh (khuyến nghị, cần Node.js 22):**
+**Trước tiên:** Dashboard → **Database → Extensions** → tìm và bật `pg_cron` và `pg_net` (lịch tự động dùng 2 extension này).
+
+**Cách A – bằng GitHub Actions (dễ nhất, không cần cài gì lên máy):**
+1. Lấy 3 giá trị:
+   - **Access token:** <https://supabase.com/dashboard/account/tokens> → **Generate new token** → đặt tên `github-deploy` → sao chép (chỉ hiện 1 lần).
+   - **Project ref:** phần `xxxx` trong Project URL `https://xxxx.supabase.co`.
+   - **Database password:** mật khẩu đặt ở bước 1.
+2. Repo GitHub → **Settings → Secrets and variables → Actions → New repository secret**, tạo 3 secret:
+   `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, `SUPABASE_DB_PASSWORD`.
+3. Repo → **Actions → Cài đặt / cập nhật Supabase → Run workflow** → để mặc định `database-va-functions` → **Run workflow**.
+4. Chờ ~2–4 phút, dấu ✓ xanh là xong. Kiểm tra: Supabase → **Table Editor** thấy các bảng `profiles`, `tasks`, `leads`, `campaigns`…
+5. Các lần cập nhật sau (có migration mới): chạy lại workflow này.
+
+**Cách B – bằng dòng lệnh (cần Node.js 22):**
 ```bash
 npx supabase login                       # mở trình duyệt để đăng nhập
 npx supabase link --project-ref <ref>    # nhập Database password ở bước 1
 npx supabase db push                     # chạy mọi file trong supabase/migrations
 ```
 
-**Cách B – bằng tay:** Dashboard → **SQL Editor → New query**, lần lượt dán nội dung từng file trong `supabase/migrations/` **theo thứ tự tên file** và bấm **Run**.
+**Cách C – bằng tay:** Dashboard → **SQL Editor → New query**, lần lượt dán nội dung từng file trong `supabase/migrations/` **theo thứ tự tên file** và bấm **Run**.
 
 ## 3. Bật đăng nhập Google
 1. **Authentication → Sign In / Providers → Google** → bật **Enable Sign in with Google**.

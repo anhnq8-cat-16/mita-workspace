@@ -1,0 +1,58 @@
+name: Cài đặt / cập nhật Supabase
+
+# Chạy tay: Actions → "Cài đặt / cập nhật Supabase" → Run workflow.
+# Cần 3 secret (Settings → Secrets and variables → Actions):
+#   SUPABASE_ACCESS_TOKEN  – supabase.com/dashboard/account/tokens → Generate new token
+#   SUPABASE_PROJECT_REF   – phần xxxx trong https://xxxx.supabase.co
+#   SUPABASE_DB_PASSWORD   – mật khẩu database đặt lúc tạo project
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Cài phần nào'
+        type: choice
+        default: database-va-functions
+        options:
+          - database-va-functions
+          - chi-database
+          - chi-functions
+
+concurrency:
+  group: deploy-supabase
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: supabase db push + functions deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Kiểm tra secrets
+        run: |
+          missing=0
+          for v in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD PROJECT_REF; do
+            if [ -z "${!v}" ]; then echo "::error::Chưa khai báo secret cho $v (xem docs/setup-supabase.md mục 2)"; missing=1; fi
+          done
+          exit $missing
+      - name: Liên kết project
+        run: supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+      - name: Chạy migration (tạo/cập nhật bảng)
+        if: inputs.target != 'chi-functions'
+        run: supabase db push --password "$SUPABASE_DB_PASSWORD" --yes
+      - name: Cài Edge Functions
+        if: inputs.target != 'chi-database'
+        run: supabase functions deploy --project-ref "$PROJECT_REF" --use-api --yes
+      - name: Migration đã chạy
+        if: inputs.target != 'chi-functions'
+        run: supabase migration list --password "$SUPABASE_DB_PASSWORD"
