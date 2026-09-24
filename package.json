@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "test:rls": "bash supabase/tests/run-local.sh",
     "test:e2e": "playwright test",
-    "test:scripts": "node --test 'scripts/**/*.test.mjs'"
+    "test:scripts": "node --test 'scripts/**/*.test.mjs'",
+    "build:demo": "vite build --config vite.demo.config.ts && node scripts/build-demo.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

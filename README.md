@@ -57,6 +57,7 @@ npx deno test supabase/functions/_shared   # test Edge Functions (Deno)
 npm run test:scripts   # test script backup (Node)
 npm run test:e2e       # E2E Playwright trên bản build (lần đầu: npx playwright install chromium)
 PERF=1 npx playwright test perf --project=desktop   # đo thời gian tải trên 4G giả lập
+npm run build:demo     # bản xem thử dữ liệu mẫu (1 file HTML: dist-demo/mita-demo.html), không cần Supabase
 ```
 
 ### Lịch tự động hoạt động thế nào

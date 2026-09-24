@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
+import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom'
 import { FullPageSpinner } from '@/components/ui/spinner'
 import { AuthCallback } from '@/features/auth/AuthCallback'
 import { LoginPage } from '@/features/auth/LoginPage'
@@ -26,7 +26,7 @@ import { RequireNav } from './RequireNav'
 import { RouteError } from './RouteError'
 
 // Trang Hôm nay + cổng kế hoạch tải ngay; các trang khác tải khi mở (xem lazy-pages.ts)
-export const router = createBrowserRouter([
+export const routes: RouteObject[] = [
   { path: '/dang-nhap', element: <LoginPage /> },
   { path: '/auth/callback', element: <AuthCallback /> },
   {
@@ -110,4 +110,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-])
+]
+
+export const router = createBrowserRouter(routes)

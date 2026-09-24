@@ -11,6 +11,7 @@ export default tseslint.config(
       'node_modules',
       'supabase/functions',
       'dev-dist',
+      'dist-demo',
       'test-results',
       'playwright-report',
     ],
