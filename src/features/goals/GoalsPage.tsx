@@ -1,18 +1,23 @@
 import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FieldError, Input, Label, Select } from '@/components/ui/input'
 import { Sheet } from '@/components/ui/sheet'
 import { ErrorBox, Spinner } from '@/components/ui/spinner'
+import { Tabs } from '@/components/ui/tabs'
+import { useWeekMilestones } from '@/features/campaigns/api'
+import { CampaignsTab } from '@/features/campaigns/CampaignsTab'
+import { WeekMilestones } from '@/features/campaigns/WeekMilestones'
 import { useGoalTasks } from '@/features/tasks/api'
 import { useTaskContext } from '@/features/tasks/use-task-context'
 import { vi } from '@/i18n/vi'
 import type { GoalSource, WeeklyGoalProgressRow } from '@/lib/database.types'
 import { formatDateVN } from '@/lib/date-vn'
 import { formatNumber, formatVND } from '@/lib/format'
+import { teamColor } from '@/lib/team-colors'
 import { cn } from '@/lib/utils'
 import { addDays, weekStart } from '@/lib/week'
 import {
@@ -310,24 +315,24 @@ function GoalCard({ goal, onEdit }: { goal: WeeklyGoalProgressRow; onEdit: () =>
   )
 }
 
-export function GoalsPage() {
+function WeeklyGoalsTab() {
   const { canAssignOthers } = useTaskContext()
   const [week, setWeek] = useState(weekStart())
   const goals = useWeeklyGoals(week)
+  const milestones = useWeekMilestones(week)
   const [editing, setEditing] = useState<WeeklyGoalProgressRow | 'new' | null>(null)
   const byTeam = new Map<string, WeeklyGoalProgressRow[]>()
   for (const g of goals.data ?? []) byTeam.set(g.team_id, [...(byTeam.get(g.team_id) ?? []), g])
+  const teams = [...new Set([...byTeam.keys(), ...(milestones.data ?? []).map((m) => m.team_id)])]
+  const empty = goals.data?.length === 0 && milestones.data?.length === 0
 
   return (
-    <div className="mx-auto grid max-w-3xl gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">{t.title}</h1>
-        {canAssignOthers && (
-          <Button onClick={() => setEditing('new')}>
-            <Plus /> {t.add}
-          </Button>
-        )}
-      </div>
+    <div className="grid gap-4">
+      {canAssignOthers && (
+        <Button className="justify-self-end" onClick={() => setEditing('new')}>
+          <Plus /> {t.add}
+        </Button>
+      )}
       <div className="flex items-center justify-between rounded-lg bg-muted p-1">
         <Button
           variant="ghost"
@@ -353,24 +358,25 @@ export function GoalsPage() {
 
       {goals.isPending && <Spinner />}
       {goals.error && <ErrorBox error={goals.error} onRetry={() => goals.refetch()} />}
-      {goals.data?.length === 0 && (
+      {empty && (
         <Card>
           <CardContent className="p-6 text-center text-sm text-muted-foreground">
             {t.empty}
           </CardContent>
         </Card>
       )}
-      {[...byTeam.entries()].map(([team, list]) => (
-        <Card key={team}>
+      {teams.map((team) => (
+        <Card key={team} style={{ borderTopColor: teamColor(team) }} className="border-t-4">
           <CardHeader>
             <CardTitle>{vi.teams[team] ?? team}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <ul>
-              {list.map((g) => (
+              {(byTeam.get(team) ?? []).map((g) => (
                 <GoalCard key={g.id} goal={g} onEdit={() => setEditing(g)} />
               ))}
             </ul>
+            <WeekMilestones items={(milestones.data ?? []).filter((m) => m.team_id === team)} />
           </CardContent>
         </Card>
       ))}
@@ -388,6 +394,28 @@ export function GoalsPage() {
           />
         )}
       </Sheet>
+    </div>
+  )
+}
+
+type PageTab = 'goals' | 'campaigns'
+
+/** /muc-tieu: mục tiêu tuần (con số – Sale) + chiến dịch theo đầu mục (Marketing) */
+export function GoalsPage() {
+  const [params, setParams] = useSearchParams()
+  const tab: PageTab = params.get('tab') === 'campaigns' ? 'campaigns' : 'goals'
+  return (
+    <div className="mx-auto grid max-w-3xl gap-4">
+      <h1 className="text-xl font-semibold">{vi.campaigns.pageTitle}</h1>
+      <Tabs<PageTab>
+        value={tab}
+        onChange={(v) => setParams(v === 'goals' ? {} : { tab: v }, { replace: true })}
+        items={[
+          { value: 'goals', label: vi.campaigns.goalsTab },
+          { value: 'campaigns', label: vi.campaigns.tab },
+        ]}
+      />
+      {tab === 'goals' ? <WeeklyGoalsTab /> : <CampaignsTab />}
     </div>
   )
 }

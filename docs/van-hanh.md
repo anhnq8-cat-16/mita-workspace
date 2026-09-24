@@ -41,6 +41,17 @@ Mọi thay đổi được ghi vào nhật ký (audit_log).
 - **Mục tiêu tuần** (`/muc-tieu`): trưởng nhóm/quản lý tạo mục tiêu cho team hoặc 1 người, chọn cách tính thực tế: *Nhập tay*, *Số việc gắn mục tiêu đã xong*; *Doanh số đơn hàng* / *Số lead mới* có số liệu từ M3. Gắn việc vào mục tiêu trong chi tiết việc (ô *Mục tiêu tuần*).
 - Sáng thứ Hai (`weekly_kickoff_time`, mặc định 08:00): hệ thống chốt mục tiêu tuần trước (Đạt/Trượt) và nhắc trưởng nhóm Sale/Marketing chưa lập mục tiêu tuần mới.
 
+## Chiến dịch & KPI theo đầu mục (Marketing)
+- **Hai kiểu KPI:** *Mục tiêu tuần* là con số (doanh số VNĐ, số quán, số lead…) – hợp với Sale. *Chiến dịch* là KPI theo **đầu mục công việc** – hợp với Marketing: hoàn thành các mốc đã đề ra, mỗi mốc gắn 1 tuần.
+- **Tạo chiến dịch** (trưởng nhóm/quản lý): **Mục tiêu & chiến dịch → tab Chiến dịch → Tạo chiến dịch** → tên, team, người phụ trách, tuần bắt đầu, số tuần, *mục tiêu chiến dịch*, *mô tả sơ bộ*, link tài liệu (Drive, Canva…).
+- **Thêm mốc:** trong chiến dịch, ở từng tuần bấm *Thêm mốc* – gõ nhiều mốc, mỗi dòng 1 mốc (vd *Chuẩn bị bao bì*, *Đóng gói sản phẩm*, *Tính giá bán*…), chọn hạn, người phụ trách, link.
+- **Giao việc cho mốc:** nút *Giao việc* ở mốc → form giao việc đã điền sẵn team, mốc và hạn; mỗi việc có *Ngày bắt đầu*, *Hạn*, *Kết quả cần đạt*. Khi giao việc bình thường (Công việc → Giao việc) cũng chọn được *Gắn với* mục tiêu tuần hoặc mốc chiến dịch.
+- **Mốc tự xong** khi mọi việc gắn với mốc đã *Hoàn thành* (mở lại việc thì mốc mở lại). Trưởng nhóm cũng đánh dấu xong bằng tay (mốc đánh dấu tay không tự mở lại).
+- **KPI tuần:** tab *Mục tiêu tuần* và dashboard hiện "Mốc chiến dịch tuần này: x/y mốc xong" theo từng team.
+- **Đẩy nhanh:** khi mọi mốc đến tuần này đã xong mà còn mốc ở tuần sau, người phụ trách chiến dịch nhận thông báo *đang vượt tiến độ* và chiến dịch hiện nút **Đẩy nhanh các mốc sau**: mốc chưa xong gần nhất kéo về tuần này, các mốc sau giữ khoảng cách; hạn của các việc chưa xong gắn với các mốc đó dời sớm tương ứng (không sớm hơn hôm nay); người phụ trách/được giao được báo.
+- **Quyền:** nhân viên xem chiến dịch của team mình, không thêm/sửa mốc, không đổi mốc hay kết quả cần đạt của việc được giao. Team khác không thấy (trừ quản lý/admin).
+- **Kanban:** mỗi cột trạng thái 1 màu (Cần làm xám · Đang làm tím · Chờ duyệt vàng · Hoàn thành xanh lá · Bị chặn đỏ); mỗi thẻ có dải màu bên trái theo team (Sale nội địa xanh dương · Marketing cam · Xuất khẩu xanh ngọc) kèm tên team, và chip tên chiến dịch · mốc nếu có.
+
 ## Sales (M3)
 - **Chủ dữ liệu Sales:** admin vào **Cài đặt → Người dùng → Chủ dữ liệu Sales**, chọn Trang. Người này nhận thông báo lead mới chờ phân công và lead quá SLA. Để trống thì mọi trưởng nhóm Sale cùng nhận.
 - **Quyền:** Sale thấy/sửa lead được giao hoặc do mình tạo, khách và đơn của mình (tên khách của người khác vẫn hiện khi kiểm tra trùng). Trưởng nhóm Sale sửa tất cả, phân công, gộp trùng. Quản lý chỉ xem. Marketing tạo lead và chỉ thấy trạng thái lead mình gửi; khi lead đã giao cho Sale thì SĐT/email bị ẩn với Marketing.

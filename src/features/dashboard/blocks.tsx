@@ -1,6 +1,9 @@
 import {
+  CheckCircle2,
   ChevronRight,
+  Circle,
   CircleSlash,
+  Flag,
   ExternalLink,
   Funnel,
   Gauge,
@@ -16,6 +19,7 @@ import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/input'
 import { ErrorBox, Spinner } from '@/components/ui/spinner'
+import { useWeekMilestones } from '@/features/campaigns/api'
 import { useCheckIns } from '@/features/checkin/api'
 import { PlanBadge, ReportBadge } from '@/features/daily/badges'
 import { useWeeklyGoals } from '@/features/goals/api'
@@ -1040,7 +1044,10 @@ export function GoalsBlock({
 }) {
   const week = weekStart(date)
   const q = useWeeklyGoals(week)
+  const ms = useWeekMilestones(week)
   const rows = (q.data ?? []).filter((g) => !team || g.team_id === team)
+  const milestones = (ms.data ?? []).filter((m) => !team || m.team_id === team)
+  const msDone = milestones.filter((m) => m.done_at).length
   const label = `${formatDateVN(week).slice(0, 5)} – ${formatDateVN(addDays(week, 6))}`
   return (
     <BentoCard
@@ -1059,21 +1066,29 @@ export function GoalsBlock({
             t.csv.unit,
             t.goals.percent,
           ]}
-          rows={() =>
-            rows.map((g) => [
+          rows={() => [
+            ...rows.map((g) => [
               g.title,
               vi.teams[g.team_id] ?? g.team_id,
               g.target,
               g.actual,
               g.unit,
               goalPercent(g.actual, g.target),
-            ])
-          }
+            ]),
+            ...milestones.map((m) => [
+              `${m.campaign_title}: ${m.title}`,
+              vi.teams[m.team_id] ?? m.team_id,
+              1,
+              m.done_at ? 1 : 0,
+              vi.campaigns.milestone.title,
+              m.done_at ? 100 : 0,
+            ]),
+          ]}
         />
       }
     >
       <Loading error={q.error} pending={q.isPending} />
-      {q.data && rows.length === 0 && (
+      {q.data && rows.length === 0 && milestones.length === 0 && (
         <p className="text-sm text-muted-foreground">
           {t.goals.empty}{' '}
           <Link to="/muc-tieu" className="font-medium text-primary hover:underline">
@@ -1105,6 +1120,57 @@ export function GoalsBlock({
           )
         })}
       </ul>
+      {milestones.length > 0 && (
+        <section
+          className={cn('grid gap-2', rows.length > 0 && 'mt-5 border-t border-slate-100 pt-4')}
+        >
+          <div className="flex items-baseline justify-between gap-2">
+            <h3 className="flex items-center gap-1.5 text-sm font-medium">
+              <Flag className="size-4 text-primary" aria-hidden /> {vi.campaigns.weekKpi}
+            </h3>
+            <p className="text-sm tabular-nums">
+              <strong className={msDone === milestones.length ? 'text-emerald-600' : ''}>
+                {ratio(msDone, milestones.length)}%
+              </strong>{' '}
+              <span className="text-muted-foreground">
+                {vi.campaigns.weekKpiDone(msDone, milestones.length)}
+              </span>
+            </p>
+          </div>
+          <ProgressBar
+            percent={ratio(msDone, milestones.length) ?? 0}
+            label={vi.campaigns.weekKpi}
+          />
+          <ul className="grid gap-1.5">
+            {milestones.map((m) => (
+              <li key={m.id} className="flex items-start gap-2 text-sm">
+                {m.done_at ? (
+                  <CheckCircle2
+                    className="mt-0.5 size-4 shrink-0 text-emerald-600"
+                    aria-label={vi.campaigns.state.done}
+                  />
+                ) : (
+                  <Circle
+                    className="mt-0.5 size-4 shrink-0 text-slate-300"
+                    aria-label={vi.campaigns.state.current}
+                  />
+                )}
+                <Link
+                  to={`/muc-tieu?tab=campaigns&c=${m.campaign_id}`}
+                  className="min-w-0 flex-1 hover:text-primary"
+                >
+                  <span className={cn(m.done_at && 'text-muted-foreground line-through')}>
+                    {m.title}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {m.campaign_title} · {formatDateVN(m.due_date).slice(0, 5)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </BentoCard>
   )
 }

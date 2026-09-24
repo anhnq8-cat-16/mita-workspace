@@ -28,6 +28,7 @@ export type ProductCategory = 'coffee' | 'accessory' | 'gift_set' | 'fruit'
 export type LibraryKind = 'image' | 'video' | 'document' | 'design' | 'youtube'
 export type SharedDriveKind = 'library' | 'sales_private'
 export type LibraryStatus = 'pending' | 'approved' | 'rejected'
+export type CampaignStatus = 'planning' | 'active' | 'done' | 'cancelled'
 
 export type EscalationRow = {
   id: string
@@ -140,6 +141,58 @@ export type SalesSummary = {
   revenue_daily: { date: string; revenue: number }[]
 }
 
+export type LinkItem = { label: string; url: string }
+
+export type CampaignRow = {
+  id: string
+  team_id: string
+  title: string
+  goal: string | null
+  description: string | null
+  start_date: string
+  end_date: string
+  status: CampaignStatus
+  owner_id: string | null
+  links: LinkItem[]
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type CampaignMilestoneRow = {
+  id: string
+  campaign_id: string
+  title: string
+  description: string | null
+  week_start: string
+  due_date: string
+  owner_id: string | null
+  links: LinkItem[]
+  position: number
+  done_at: string | null
+  done_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+/** fn_campaigns: chiến dịch + tiến độ */
+export type CampaignListRow = Omit<CampaignRow, 'created_at' | 'updated_at'> & {
+  milestone_total: number
+  milestone_done: number
+  current_week_total: number
+  current_week_done: number
+  can_pull: boolean
+  can_manage: boolean
+}
+
+/** fn_milestones: mốc + số việc */
+export type MilestoneProgressRow = Omit<CampaignMilestoneRow, 'created_at' | 'updated_at'> & {
+  campaign_title: string
+  team_id: string
+  task_total: number
+  task_done: number
+}
+
 type Table<Row, Required extends keyof Row = never> = {
   Row: Row
   Insert: Partial<Row> & Pick<Row, Required>
@@ -247,6 +300,8 @@ export type TaskRow = {
   completed_at: string | null
   approved_by: string | null
   blocked_reason: string | null
+  milestone_id: string | null
+  expected_result: string | null
   created_at: string
   updated_at: string
 }
@@ -664,6 +719,11 @@ export interface Database {
       product_price_history: Table<ProductPriceHistoryRow, 'product_id'>
       library_items: Table<LibraryItemRow, 'title' | 'kind'>
       escalations: Table<EscalationRow, 'user_id' | 'period_month' | 'level' | 'reason'>
+      campaigns: Table<CampaignRow, 'team_id' | 'title' | 'start_date' | 'end_date'>
+      campaign_milestones: Table<
+        CampaignMilestoneRow,
+        'campaign_id' | 'title' | 'week_start' | 'due_date'
+      >
     }
     Views: { [_ in never]: never }
     Functions: {
@@ -753,6 +813,12 @@ export interface Database {
       fn_dashboard_inbox: { Args: Record<string, never>; Returns: DashboardInbox }
       fn_dashboard_sales: { Args: { p_from: string; p_to: string }; Returns: SalesSummary }
       fn_resolve_escalation: { Args: { p_id: string; p_note: string }; Returns: undefined }
+      fn_campaigns: { Args: { p_team?: string | null }; Returns: CampaignListRow[] }
+      fn_milestones: {
+        Args: { p_campaign?: string | null; p_week?: string | null }
+        Returns: MilestoneProgressRow[]
+      }
+      fn_campaign_pull_forward: { Args: { p_campaign: string }; Returns: number }
     }
     Enums: {
       role_enum: Role
@@ -774,6 +840,7 @@ export interface Database {
       library_kind: LibraryKind
       shared_drive_kind: SharedDriveKind
       library_status: LibraryStatus
+      campaign_status: CampaignStatus
     }
     CompositeTypes: { [_ in never]: never }
   }

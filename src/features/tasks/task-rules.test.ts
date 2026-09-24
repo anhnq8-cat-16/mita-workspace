@@ -20,6 +20,8 @@ const task = (p: Partial<TaskRow> = {}): TaskRow => ({
   assignee_id: 'long',
   created_by: 'mai',
   weekly_goal_id: null,
+  milestone_id: null,
+  expected_result: null,
   status: 'todo',
   priority: 'normal',
   start_date: null,

@@ -451,6 +451,8 @@ const T = (p: Row): Row => ({
   assignee_id: 'u-long',
   created_by: 'u-mai',
   weekly_goal_id: null,
+  milestone_id: null,
+  expected_result: null,
   status: 'todo',
   priority: 'normal',
   start_date: null,
@@ -902,4 +904,144 @@ export function dayDetail(user: string, date: string) {
         }
       : null,
   }
+}
+
+// ---------------------------------------------------------------------------
+// Chiến dịch (KPI theo đầu mục)
+// ---------------------------------------------------------------------------
+const CW = weekStart(TODAY)
+export const campaigns: Row[] = [
+  {
+    id: 'cp1',
+    team_id: 'marketing',
+    title: 'Set quà cà phê 20/10',
+    goal: 'Ra mắt set quà 20/10, bán 300 set trước ngày 20/10',
+    description:
+      'Tuần 1: bao bì + duyệt mẫu. Tuần 2: đóng gói, tính giá. Tuần 3: bảng giá + chụp ảnh. Tuần 4: tung ra thị trường (fanpage, đại lý, quán quen).',
+    start_date: addDays(CW, -7),
+    end_date: addDays(CW, 20),
+    status: 'active',
+    owner_id: 'u-trang',
+    links: [
+      { label: 'Brief chiến dịch', url: 'https://docs.google.com/document/d/demo' },
+      { label: 'Thiết kế hộp (Canva)', url: 'https://www.canva.com/design/demo' },
+    ],
+    created_by: 'u-trang',
+  },
+  {
+    id: 'cp2',
+    team_id: 'marketing',
+    title: 'Video TikTok dòng Honey',
+    goal: '4 video ngắn, 50.000 lượt xem',
+    description: 'Mỗi tuần 1 video: quy trình rang, pha phin, pha lạnh, review khách.',
+    start_date: CW,
+    end_date: addDays(CW, 27),
+    status: 'planning',
+    owner_id: 'u-thao',
+    links: [],
+    created_by: 'u-trang',
+  },
+]
+const MS = (
+  id: string,
+  cp: string,
+  week: number,
+  title: string,
+  done: boolean,
+  owner: string,
+  dueOffset = 5,
+) => ({
+  id,
+  campaign_id: cp,
+  title,
+  description: null,
+  week_start: addDays(CW, 7 * week),
+  due_date: addDays(CW, 7 * week + dueOffset),
+  owner_id: owner,
+  links: [],
+  position: 0,
+  done_at: done ? iso(-30) : null,
+  done_by: null,
+})
+export const milestones: Row[] = [
+  MS('m1', 'cp1', -1, 'Chuẩn bị bao bì', true, 'u-thao'),
+  MS('m2', 'cp1', -1, 'Duyệt mẫu hộp quà', true, 'u-trang'),
+  MS('m3', 'cp1', 0, 'Đóng gói sản phẩm', false, 'u-kien'),
+  MS('m4', 'cp1', 0, 'Tính giá bán', true, 'u-trang', 2),
+  MS('m5', 'cp1', 1, 'Lên bảng giá set quà', false, 'u-trang'),
+  MS('m6', 'cp1', 1, 'Chụp ảnh sản phẩm', false, 'u-thao'),
+  MS('m7', 'cp1', 2, 'Tung ra thị trường', false, 'u-trang'),
+  MS('m8', 'cp2', 0, 'Video quy trình rang', false, 'u-thao'),
+  MS('m9', 'cp2', 1, 'Video pha phin', false, 'u-thao'),
+]
+tasks.push(
+  T({
+    id: 't11',
+    title: 'Đóng gói 100 set mẫu đợt 1',
+    team_id: 'marketing',
+    assignee_id: 'u-kien',
+    created_by: 'u-trang',
+    status: 'done',
+    milestone_id: 'm3',
+    expected_result: '100 set hoàn chỉnh, có thiệp',
+    due_date: addDays(CW, 2),
+    completed_at: iso(-10),
+  }),
+  T({
+    id: 't12',
+    title: 'Đóng gói 200 set đợt 2',
+    team_id: 'marketing',
+    assignee_id: 'u-kien',
+    created_by: 'u-trang',
+    status: 'doing',
+    milestone_id: 'm3',
+    expected_result: '200 set, kiểm tra hạn dùng',
+    start_date: addDays(CW, 2),
+    due_date: addDays(CW, 5),
+  }),
+  T({
+    id: 't13',
+    title: 'Chụp bộ ảnh set quà trên nền gỗ',
+    team_id: 'marketing',
+    assignee_id: 'u-thao',
+    created_by: 'u-trang',
+    status: 'todo',
+    milestone_id: 'm6',
+    expected_result: '12 ảnh đã chỉnh, đủ cho fanpage + website',
+    due_date: addDays(CW, 11),
+  }),
+)
+
+const msCounts = (id: string) => {
+  const list = tasks.filter((t) => t.milestone_id === id)
+  return { task_total: list.length, task_done: list.filter((t) => t.status === 'done').length }
+}
+
+export function milestoneRows(campaign?: string, week?: string): Row[] {
+  return milestones
+    .filter((m) => (!campaign || m.campaign_id === campaign) && (!week || m.week_start === week))
+    .map((m) => {
+      const c = campaigns.find((x) => x.id === m.campaign_id)!
+      return { ...m, campaign_title: c.title, team_id: c.team_id, ...msCounts(String(m.id)) }
+    })
+}
+
+export function campaignRows(): Row[] {
+  return campaigns.map((c) => {
+    const ms = milestones.filter((m) => m.campaign_id === c.id)
+    const cur = ms.filter((m) => m.week_start === CW)
+    const pending = ms.filter((m) => !m.done_at)
+    return {
+      ...c,
+      milestone_total: ms.length,
+      milestone_done: ms.filter((m) => m.done_at).length,
+      current_week_total: cur.length,
+      current_week_done: cur.filter((m) => m.done_at).length,
+      can_pull:
+        pending.length > 0 &&
+        !pending.some((m) => String(m.week_start) <= CW) &&
+        pending.some((m) => String(m.week_start) > CW),
+      can_manage: true,
+    }
+  })
 }

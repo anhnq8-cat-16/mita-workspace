@@ -3,9 +3,13 @@ import { useState } from 'react'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { FieldError, Input, Label, Select } from '@/components/ui/input'
+import { useMilestoneLookup } from '@/features/campaigns/api'
+import { useGoalOptions } from '@/features/goals/api'
 import { vi } from '@/i18n/vi'
 import type { TaskPriority } from '@/lib/database.types'
+import { formatDateVN } from '@/lib/date-vn'
 import { cn } from '@/lib/utils'
+import { weekStart } from '@/lib/week'
 import { useCreateTasks, type NewTask } from './api'
 import { PRIORITIES } from './task-rules'
 import { useTaskContext } from './use-task-context'
@@ -85,21 +89,49 @@ export function SelfTaskForm({ onDone }: { onDone: () => void }) {
 interface Row {
   key: number
   title: string
+  start: string
   due: string
   priority: TaskPriority
+  expected: string
+}
+
+const emptyRow = (key: number, due = ''): Row => ({
+  key,
+  title: '',
+  start: '',
+  due,
+  priority: 'normal',
+  expected: '',
+})
+
+export interface BulkInitial {
+  team?: string
+  /** 'goal:<id>' | 'ms:<id>' */
+  link?: string
+  due?: string
 }
 
 /** Lead/manager: nhiều việc × nhiều người trong 1 form */
-export function BulkAssignForm({ onDone }: { onDone: (count: number) => void }) {
+export function BulkAssignForm({
+  onDone,
+  initial,
+}: {
+  onDone: (count: number) => void
+  initial?: BulkInitial
+}) {
   const { me, actor, assignable } = useTaskContext()
   const create = useCreateTasks()
   const teamOptions =
     me.role === 'lead' ? actor.ledTeams : ['sales_domestic', 'marketing', 'export']
-  const [team, setTeam] = useState(teamOptions[0] ?? '')
+  const [team, setTeam] = useState(initial?.team ?? teamOptions[0] ?? '')
+  const [link, setLink] = useState(initial?.link ?? '')
   const [picked, setPicked] = useState<string[]>([])
   const [sensitive, setSensitive] = useState(false)
-  const [rows, setRows] = useState<Row[]>([{ key: 1, title: '', due: '', priority: 'normal' }])
+  const [rows, setRows] = useState<Row[]>([emptyRow(1, initial?.due)])
   const [localError, setLocalError] = useState<string | null>(null)
+  const goals = useGoalOptions(team || null, weekStart())
+  const milestones = useMilestoneLookup()
+  const teamMilestones = (milestones.data ?? []).filter((m) => m.team_id === team && !m.done_at)
 
   const members = assignable.filter((u) => u.teams.some((m) => m.team_id === team))
   const filled = rows.filter((r) => r.title.trim())
@@ -117,8 +149,12 @@ export function BulkAssignForm({ onDone }: { onDone: (count: number) => void }) 
         title: r.title.trim(),
         team_id: team,
         assignee_id: assignee,
+        start_date: r.start || null,
         due_date: r.due || null,
         priority: r.priority,
+        expected_result: r.expected.trim() || null,
+        weekly_goal_id: link.startsWith('goal:') ? link.slice(5) : null,
+        milestone_id: link.startsWith('ms:') ? link.slice(3) : null,
         is_sensitive: sensitive,
       })),
     )
@@ -137,6 +173,7 @@ export function BulkAssignForm({ onDone }: { onDone: (count: number) => void }) 
           onChange={(e) => {
             setTeam(e.target.value)
             setPicked([])
+            setLink('')
           }}
         >
           {teamOptions.map((id) => (
@@ -144,6 +181,31 @@ export function BulkAssignForm({ onDone }: { onDone: (count: number) => void }) 
               {vi.teams[id] ?? id}
             </option>
           ))}
+        </Select>
+      </div>
+
+      <div className="grid gap-1.5">
+        <Label htmlFor="bulk-link">{t.fields.linkTo}</Label>
+        <Select id="bulk-link" value={link} onChange={(e) => setLink(e.target.value)}>
+          <option value="">{t.noGoal}</option>
+          {teamMilestones.length > 0 && (
+            <optgroup label={t.milestoneGroup}>
+              {teamMilestones.map((m) => (
+                <option key={m.id} value={`ms:${m.id}`}>
+                  {m.campaign_title} · {m.title} ({formatDateVN(m.due_date).slice(0, 5)})
+                </option>
+              ))}
+            </optgroup>
+          )}
+          {(goals.data ?? []).length > 0 && (
+            <optgroup label={t.goalGroup}>
+              {goals.data!.map((g) => (
+                <option key={g.id} value={`goal:${g.id}`}>
+                  {formatDateVN(g.week_start).slice(0, 5)} · {g.title}
+                </option>
+              ))}
+            </optgroup>
+          )}
         </Select>
       </div>
 
@@ -192,25 +254,47 @@ export function BulkAssignForm({ onDone }: { onDone: (count: number) => void }) 
                 </Button>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                type="date"
-                value={r.due}
-                aria-label={t.fields.due}
-                onChange={(e) => setRow(r.key, { due: e.target.value })}
-              />
-              <Select
-                value={r.priority}
-                aria-label={t.fields.priority}
-                onChange={(e) => setRow(r.key, { priority: e.target.value as TaskPriority })}
-              >
-                {PRIORITIES.map((p) => (
-                  <option key={p} value={p}>
-                    {vi.priorities[p]}
-                  </option>
-                ))}
-              </Select>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="grid gap-1">
+                <span className="text-[11px] text-muted-foreground">{t.fields.start}</span>
+                <Input
+                  type="date"
+                  value={r.start}
+                  aria-label={`${t.fields.start} ${i + 1}`}
+                  onChange={(e) => setRow(r.key, { start: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-1">
+                <span className="text-[11px] text-muted-foreground">{t.fields.due}</span>
+                <Input
+                  type="date"
+                  value={r.due}
+                  min={r.start || undefined}
+                  aria-label={`${t.fields.due} ${i + 1}`}
+                  onChange={(e) => setRow(r.key, { due: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-1">
+                <span className="text-[11px] text-muted-foreground">{t.fields.priority}</span>
+                <Select
+                  value={r.priority}
+                  aria-label={`${t.fields.priority} ${i + 1}`}
+                  onChange={(e) => setRow(r.key, { priority: e.target.value as TaskPriority })}
+                >
+                  {PRIORITIES.map((p) => (
+                    <option key={p} value={p}>
+                      {vi.priorities[p]}
+                    </option>
+                  ))}
+                </Select>
+              </div>
             </div>
+            <Input
+              value={r.expected}
+              placeholder={`${t.fields.expected}: ${t.fields.expectedPlaceholder.replace('Vd: ', '')}`}
+              aria-label={`${t.fields.expected} ${i + 1}`}
+              onChange={(e) => setRow(r.key, { expected: e.target.value })}
+            />
           </div>
         ))}
         <Button
@@ -220,12 +304,7 @@ export function BulkAssignForm({ onDone }: { onDone: (count: number) => void }) 
           onClick={() =>
             setRows((prev) => [
               ...prev,
-              {
-                key: Math.max(...prev.map((x) => x.key)) + 1,
-                title: '',
-                due: '',
-                priority: 'normal',
-              },
+              emptyRow(Math.max(...prev.map((x) => x.key)) + 1, initial?.due),
             ])
           }
         >

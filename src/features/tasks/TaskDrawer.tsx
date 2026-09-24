@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { FieldError, Input, Label, Select, Textarea } from '@/components/ui/input'
 import { Sheet } from '@/components/ui/sheet'
 import { ErrorBox, Spinner } from '@/components/ui/spinner'
+import { useMilestoneLookup } from '@/features/campaigns/api'
 import { useGoalOptions } from '@/features/goals/api'
 import { useLibraryItems } from '@/features/library/api'
 import { vi } from '@/i18n/vi'
@@ -108,17 +109,27 @@ function DetailsForm({ task }: { task: TaskRow }) {
   const manage = canManageTask(actor, task)
   const editable = canEditContent(actor, task)
   const goals = useGoalOptions(task.team_id, addDays(weekStart(), -7))
+  const milestones = useMilestoneLookup()
   const [form, setForm] = useState({
     title: task.title,
     description: task.description ?? '',
+    expected_result: task.expected_result ?? '',
+    start_date: task.start_date ?? '',
     due_date: task.due_date ?? '',
     priority: task.priority,
     estimate_minutes: task.estimate_minutes?.toString() ?? '',
     assignee_id: task.assignee_id ?? '',
     team_id: task.team_id ?? '',
-    weekly_goal_id: task.weekly_goal_id ?? '',
+    link: task.milestone_id
+      ? `ms:${task.milestone_id}`
+      : task.weekly_goal_id
+        ? `goal:${task.weekly_goal_id}`
+        : '',
     is_sensitive: task.is_sensitive,
   })
+  const teamMilestones = (milestones.data ?? []).filter(
+    (m) => m.team_id === form.team_id && (!m.done_at || m.id === task.milestone_id),
+  )
   const [editingDesc, setEditingDesc] = useState(false)
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [k]: v }))
@@ -134,6 +145,8 @@ function DetailsForm({ task }: { task: TaskRow }) {
     const patch: TaskPatch = {
       title: form.title.trim(),
       description: form.description.trim() || null,
+      expected_result: form.expected_result.trim() || null,
+      start_date: form.start_date || null,
       due_date: form.due_date || null,
       priority: form.priority,
       estimate_minutes: form.estimate_minutes === '' ? null : Number(form.estimate_minutes),
@@ -141,7 +154,8 @@ function DetailsForm({ task }: { task: TaskRow }) {
     if (manage) {
       patch.assignee_id = form.assignee_id || null
       patch.team_id = form.team_id || null
-      patch.weekly_goal_id = form.weekly_goal_id || null
+      patch.weekly_goal_id = form.link.startsWith('goal:') ? form.link.slice(5) : null
+      patch.milestone_id = form.link.startsWith('ms:') ? form.link.slice(3) : null
       patch.is_sensitive = form.is_sensitive
     }
     update.mutate({ id: task.id, patch }, { onSuccess: () => setEditingDesc(false) })
@@ -151,6 +165,18 @@ function DetailsForm({ task }: { task: TaskRow }) {
     return (
       <div className="grid gap-3">
         <h2 className="text-lg font-semibold">{task.title}</h2>
+        {task.expected_result && (
+          <div className="rounded-lg bg-primary/5 p-3 text-sm">
+            <p className="text-xs font-medium text-muted-foreground">{t.fields.expected}</p>
+            <p className="whitespace-pre-line">{task.expected_result}</p>
+          </div>
+        )}
+        {(task.start_date || task.due_date) && (
+          <p className="text-sm text-muted-foreground">
+            {task.start_date && `${t.fields.start}: ${formatDateVN(task.start_date)} · `}
+            {task.due_date && `${t.fields.due}: ${formatDateVN(task.due_date)}`}
+          </p>
+        )}
         {task.description ? (
           <div className="prose-sm max-w-none text-sm [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5">
             <Markdown>{task.description}</Markdown>
@@ -167,6 +193,16 @@ function DetailsForm({ task }: { task: TaskRow }) {
       <div className="grid gap-1.5">
         <Label htmlFor="task-title">{t.fields.title}</Label>
         <Input id="task-title" value={form.title} onChange={(e) => set('title', e.target.value)} />
+      </div>
+      <div className="grid gap-1.5">
+        <Label htmlFor="task-expected">{t.fields.expected}</Label>
+        <Textarea
+          id="task-expected"
+          rows={2}
+          placeholder={t.fields.expectedPlaceholder}
+          value={form.expected_result}
+          onChange={(e) => set('expected_result', e.target.value)}
+        />
       </div>
       <div className="grid gap-1.5">
         <div className="flex items-center justify-between">
@@ -191,6 +227,15 @@ function DetailsForm({ task }: { task: TaskRow }) {
         )}
       </div>
       <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-1.5">
+          <Label htmlFor="task-start">{t.fields.start}</Label>
+          <Input
+            id="task-start"
+            type="date"
+            value={form.start_date}
+            onChange={(e) => set('start_date', e.target.value)}
+          />
+        </div>
         <div className="grid gap-1.5">
           <Label htmlFor="task-due">{t.fields.due}</Label>
           <Input
@@ -234,7 +279,7 @@ function DetailsForm({ task }: { task: TaskRow }) {
               value={form.team_id}
               onChange={(e) => {
                 set('team_id', e.target.value)
-                set('weekly_goal_id', '')
+                set('link', '')
               }}
             >
               {teamOptions.map((id) => (
@@ -264,18 +309,27 @@ function DetailsForm({ task }: { task: TaskRow }) {
             </Select>
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="task-goal">{t.fields.goal}</Label>
-            <Select
-              id="task-goal"
-              value={form.weekly_goal_id}
-              onChange={(e) => set('weekly_goal_id', e.target.value)}
-            >
+            <Label htmlFor="task-goal">{t.fields.linkTo}</Label>
+            <Select id="task-goal" value={form.link} onChange={(e) => set('link', e.target.value)}>
               <option value="">{t.noGoal}</option>
-              {goals.data?.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {formatDateVN(g.week_start).slice(0, 5)} · {g.title}
-                </option>
-              ))}
+              {teamMilestones.length > 0 && (
+                <optgroup label={t.milestoneGroup}>
+                  {teamMilestones.map((m) => (
+                    <option key={m.id} value={`ms:${m.id}`}>
+                      {m.campaign_title} · {m.title} ({formatDateVN(m.due_date).slice(0, 5)})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {(goals.data ?? []).length > 0 && (
+                <optgroup label={t.goalGroup}>
+                  {goals.data!.map((g) => (
+                    <option key={g.id} value={`goal:${g.id}`}>
+                      {formatDateVN(g.week_start).slice(0, 5)} · {g.title}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </Select>
           </div>
           <label className="flex min-h-11 items-center gap-2 text-sm">

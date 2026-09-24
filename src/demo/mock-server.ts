@@ -26,6 +26,8 @@ const tables: Record<string, () => Row[]> = {
   extra_workdays: () => [],
   invitations: () => [],
   outbox: () => [],
+  campaigns: () => D.campaigns,
+  campaign_milestones: () => D.milestones,
 }
 
 /** Áp dụng bộ lọc PostgREST đơn giản: eq, neq, in, is, gt(e), lt(e) */
@@ -108,6 +110,13 @@ const rpc: Record<string, (b: Body) => unknown> = {
   fn_can_approve_library: () => true,
   fn_customer_directory: () => D.customers,
   fn_my_submitted_leads: () => [],
+  fn_campaigns: () => D.campaignRows(),
+  fn_milestones: (b) =>
+    D.milestoneRows(
+      b.p_campaign ? String(b.p_campaign) : undefined,
+      b.p_week ? String(b.p_week) : undefined,
+    ),
+  fn_campaign_pull_forward: () => 0,
 }
 
 const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>

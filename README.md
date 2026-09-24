@@ -10,6 +10,7 @@
 - M3 Sales: lead (kiểm tra trùng, SLA, hàng chờ, phân công, pipeline kéo-thả, hoạt động, chốt/mất, gộp trùng), khách hàng + bản đồ, đơn hàng + KPI tháng, check-in GPS + ảnh lên Drive, báo cáo Sale tự điền.
 - M4 Thư viện & sản phẩm: upload resumable lên Shared Drive (tiến độ, hủy, file lớn), duyệt + tự chuyển thư mục đích, ảnh thu nhỏ có kiểm tra quyền, YouTube, `/thu-vien` độc lập; sản phẩm + bảng giá (sửa hàng loạt, lịch sử giá, in/PDF), 37 sản phẩm seed (giá để trống).
 - M5 Dashboard & tuân thủ: `/quan-ly` 6 khối (từng người, chờ xử lý, điểm tuân thủ + xu hướng 4 tuần, Sales, mục tiêu tuần, bản đồ check-in), xuất CSV, leo thang tự động (việc gặp 1-1), email điểm tuần + báo cáo tuần thứ Hai.
+- Chiến dịch & KPI theo đầu mục: chiến dịch nhiều tuần (mục tiêu, mô tả, link tài liệu), mốc gắn từng tuần, giao việc theo mốc (ngày bắt đầu, hạn, kết quả cần đạt), mốc tự xong, đẩy nhanh khi vượt tiến độ; Kanban màu theo trạng thái + team.
 - M6 Hoàn thiện: cài lên điện thoại (PWA), backup hằng đêm lên `MITA Backup` + thử khôi phục, trang Nhật ký (thay đổi dữ liệu + tình trạng job/email), tách mã theo trang (trang chính < 2 giây trên 4G), test E2E Playwright; dashboard giao diện premium (bento, Recharts).
 
 ## Công nghệ

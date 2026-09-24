@@ -109,6 +109,8 @@ export type TaskPatch = Partial<
     | 'assignee_id'
     | 'team_id'
     | 'weekly_goal_id'
+    | 'milestone_id'
+    | 'expected_result'
     | 'is_sensitive'
     | 'blocked_reason'
     | 'position'
@@ -143,10 +145,13 @@ export type NewTask = Pick<TaskRow, 'title' | 'team_id' | 'assignee_id'> &
     Pick<
       TaskRow,
       | 'description'
+      | 'start_date'
       | 'due_date'
       | 'priority'
       | 'estimate_minutes'
       | 'weekly_goal_id'
+      | 'milestone_id'
+      | 'expected_result'
       | 'is_sensitive'
     >
   >
