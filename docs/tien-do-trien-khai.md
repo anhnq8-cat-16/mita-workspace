@@ -39,6 +39,7 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
    - [ ] (Nếu nhân viên cần mở file Drive) Admin → Ứng dụng → Drive và Tài liệu → Chia sẻ: cho phép chia sẻ ra ngoài tổ chức.
 3. **Danh sách nhân viên (hoãn, người dùng bổ sung sau khi chạy):** gửi `Họ tên | email | team | vai trò` → tạo SQL roster (`supabase/roster.example.sql`), hoặc admin tự thêm trong app.
 4. Nhóm Google (`all@`, `sales@`, `mkt@`, `managers@`) + 3 Shared Drive, thêm `sale05@` làm Người quản lý nội dung.
+   - [x] **Tải lên + duyệt ảnh Thư viện chạy tốt** (25/09): file vào `00_Cho-duyet`, duyệt xong chuyển đúng thư mục.
    - [x] Shared Drive ID: **MITA Library** `0AJRZGRnuyxiZUk9PVA`, **MITA Sales Private** `0AGM_4muC0UkKUk9PVA` (25/09) → điền vào `settings.drive.folders`.
    - Gói Business Starter: chia sẻ ngoài tổ chức mặc định cho phép; Gmail không cần là thành viên drive (app dùng `sale05@` thay), chỉ nút *Mở trên Drive* cần quyền Drive.
 5. Sao lưu: secrets cho workflow backup (`docs/backup.md`).
