@@ -236,8 +236,13 @@ export function LibraryPage() {
   const [params, setParams] = useSearchParams()
   const approver = Boolean(canApprove.data?.library || canApprove.data?.sales_private)
 
+  // Trưởng nhóm không tự duyệt file của mình; quản lý/admin thì được (công ty ít người duyệt)
+  const selfApprove = me.role === 'admin' || me.role === 'manager'
   const pending = (items.data ?? []).filter(
-    (i) => i.status === 'pending' && i.uploaded_by !== me.id && canApprove.data?.[i.shared_drive],
+    (i) =>
+      i.status === 'pending' &&
+      (selfApprove || i.uploaded_by !== me.id) &&
+      canApprove.data?.[i.shared_drive],
   )
   const mine = (items.data ?? []).filter((i) => i.uploaded_by === me.id)
   const tabs: Tab[] = ['browse', 'upload', ...(approver ? (['review'] as Tab[]) : []), 'mine']
