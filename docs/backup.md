@@ -51,6 +51,8 @@ phải thấy file `<hôm nay>.sql.gz` (nghiệm thu M6-2).
 |---|---|
 | *Dump database* – `connection refused` / `timeout` | `SUPABASE_DB_URL` là *Direct connection* (IPv6) → đổi sang **Session pooler**; hoặc project Supabase gói Free đang **tạm dừng** (Dashboard → Restore). |
 | *Dump database* – `password authentication failed` | Đổi mật khẩu database mà chưa cập nhật secret. |
+| *Dump database* – `server version mismatch` | `supabase/config.toml` → `[db] major_version` phải trùng phiên bản Postgres của project (Dashboard → Settings → Infrastructure). Hiện là **17**. |
+| *Dump database* – mật khẩu đúng mà vẫn `password authentication failed` | Mật khẩu có ký tự đặc biệt → trong `SUPABASE_DB_URL` phải mã hóa (`@`→`%40`, `#`→`%23`, `/`→`%2F`, `:`→`%3A`, `?`→`%3F`, `&`→`%26`, `%`→`%25`, `+`→`%2B`) và bỏ dấu `[ ]`. |
 | *Tải lên Google Drive* – `unauthorized_client` | Domain-wide delegation chưa có scope `drive` cho Client ID của service account. |
 | *Tải lên Google Drive* – `404 File not found` | `BACKUP_DRIVE_FOLDER_ID` sai, hoặc `sale05@` chưa là thành viên `MITA Backup`. |
 
