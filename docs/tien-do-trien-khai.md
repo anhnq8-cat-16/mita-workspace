@@ -24,13 +24,13 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
 
 ## Cần kiểm tra lại ⚠️
 
-- [ ] Lịch tự động: `select jobname, schedule, active from cron.job;` phải có `mita-tick`.
+- [x] Lịch tự động chạy (outbox đã được gửi đi tự động).
 
 ## Việc tiếp theo ⏭️
 
 1. ~~Tạo admin + đăng nhập thử~~ – **xong 25/09**: admin đã đăng nhập, vào được Thư viện.
-   - Sửa `settings.app_origin` (migration đặt sẵn `https://work.mitaexport.com`) → `https://mita-workspace.anhnq8-cat.workers.dev` để link trong email đúng.
-   - Gửi email thử bằng `fn_notify_user(..., p_email => true, p_mandatory => true)`, xem bảng `outbox`.
+   - [x] Đã sửa `settings.app_origin` → `https://mita-workspace.anhnq8-cat.workers.dev`.
+   - [x] **Email thử gửi thành công** (outbox `sent`, 25/09) → delegation + Vault + cron + function `notify` đều chạy.
 2. **Cho phép Gmail cá nhân (cách A, 25/09 – hết license Workspace, đã dùng 5/5):** code đã sửa (migration `20261002000100_invited_personal_email.sql` + form mời). Người dùng cần làm:
    - [x] Cloudflare Worker: đã xóa `VITE_GOOGLE_HD`; build `main` `bf9d2f5` ✅ (25/09).
    - [x] Google Auth Platform → **Audience** → *Make external* – đang ở chế độ **Testing** (không chọn được In production). ⇒ Mỗi Gmail nhân viên phải thêm vào **Audience → Test users** (tối đa 100).
