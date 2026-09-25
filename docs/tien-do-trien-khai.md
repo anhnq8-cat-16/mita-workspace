@@ -45,3 +45,4 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
 5. Sao lưu (`docs/backup.md`): 4 secret đã nhập; sửa `major_version = 17` (Postgres của project là 17.6) → chạy thử trên nhánh phát triển **thành công** (run 36173119887, 25/09). `main` đã cập nhật (25/09) → lịch 01:00 hằng đêm dùng bản sửa.
 6. Nghiệm thu theo `docs/van-hanh.md`.
 7. (Tùy chọn, sau này) Đổi sang `work.mitaexport.com`: Cloudflare Pages + 1 bản ghi CNAME `work` ở **Nhân Hòa** (không đụng MX), rồi cập nhật lại Site URL, Redirect URL, `APP_ORIGIN`, Google OAuth origin.
+8. **26/09:** Slide hướng dẫn sử dụng (Nhân viên + Quản lý, 27 trang, có ảnh chú thích) – artifact https://claude.ai/artifact/2mnjiHs5yLGW6BD7eNRA9U. Tối ưu giao diện điện thoại (commit `4582fe3`) – **cần cập nhật `main`** để lên web.
