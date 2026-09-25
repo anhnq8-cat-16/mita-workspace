@@ -1,4 +1,4 @@
-# Tiến độ triển khai (cập nhật 24/09/2026)
+# Tiến độ triển khai (cập nhật 25/09/2026)
 
 Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đã xong, CI xanh; `main` = `454f6e9`.
 
@@ -12,14 +12,12 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
 | Extensions | `pg_cron`, `pg_net` đã bật |
 | Vault | `project_url` = `https://ufomfswokkqzlwhowtlx.supabase.co`, `cron_secret` (64 ký tự) |
 | Edge Function secrets | `GOOGLE_SERVICE_ACCOUNT_JSON`, `GOOGLE_SYSTEM_USER` = `sale05@mitaexport.com`, `CRON_SECRET` |
-| Google Cloud | Project "My First Project"; service account `mita-system` + key JSON (đã tắt tạm chặn tạo key) |
+| Google Cloud | Project "My First Project"; service account `mita-system` + key JSON; đã bật lại chặn tạo key; đã bật Gmail API + Google Drive API |
 | Tài khoản | Admin cài đặt: `sale@mitaexport.com`. Tài khoản hệ thống gửi mail/Drive: `sale05@mitaexport.com` (không cần admin) |
 | Cloudflare | Đã tạo **Worker** `mita-workspace` (tài khoản anhnq8.cat), 4 biến build đã nhập. Repo đã có `wrangler.jsonc`, `.node-version`, bỏ `_redirects` |
 
 ## Cần kiểm tra lại ⚠️
 
-- [ ] Bật lại chặn tạo key: Organization Policies → `iam.managed.disableServiceAccountKeyCreation` → **Inherit parent's policy**.
-- [ ] Đã bật **Gmail API** + **Google Drive API** chưa.
 - [ ] Đã làm **domain-wide delegation** (Unique ID của `mita-system`, scope `drive,gmail.send`) chưa.
 - [ ] Lịch tự động: `select jobname, schedule, active from cron.job;` phải có `mita-tick`.
 - [ ] Worker Cloudflare: bản `main` mới (`454f6e9`) **chưa được tự build** – nếu vẫn chưa có, vào Deployments bấm build cho nhánh `main`, hoặc chuyển sang Pages (bước 1 bên dưới).
