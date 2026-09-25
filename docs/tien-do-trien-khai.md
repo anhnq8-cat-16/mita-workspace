@@ -9,7 +9,7 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
 | Hạng mục | Chi tiết |
 |---|---|
 | Supabase project | `mita-workspace`, ref `ufomfswokkqzlwhowtlx`, vùng Singapore |
-| Bảng + hàm | Workflow **Cài đặt / cập nhật Supabase** chạy thành công: 13/13 migration, 6 Edge Function |
+| Bảng + hàm | Workflow **Cài đặt / cập nhật Supabase** chạy thành công: 14/14 migration, 6 Edge Function |
 | GitHub secrets | `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, `SUPABASE_DB_PASSWORD` |
 | Extensions | `pg_cron`, `pg_net` đã bật |
 | Vault | `project_url` = `https://ufomfswokkqzlwhowtlx.supabase.co`, `cron_secret` (64 ký tự) |
@@ -35,7 +35,7 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
    - [x] Cloudflare Worker: đã xóa `VITE_GOOGLE_HD`; build `main` `bf9d2f5` ✅ (25/09).
    - [x] Google Auth Platform → **Audience** → *Make external* – đang ở chế độ **Testing** (không chọn được In production). ⇒ Mỗi Gmail nhân viên phải thêm vào **Audience → Test users** (tối đa 100).
    - [x] Workflow **Cài đặt / cập nhật Supabase** trên `main` ✅ – 14/14 migration (gồm `20261002000100`).
-   - [ ] Thử: thêm 1 Gmail vào Test users + mời trong app → đăng nhập.
+   - [x] Thử: thêm 1 Gmail vào Test users + mời trong app → **đăng nhập thành công** (25/09).
    - [ ] (Nếu nhân viên cần mở file Drive) Admin → Ứng dụng → Drive và Tài liệu → Chia sẻ: cho phép chia sẻ ra ngoài tổ chức.
 3. **Danh sách nhân viên (hoãn, người dùng bổ sung sau khi chạy):** gửi `Họ tên | email | team | vai trò` → tạo SQL roster (`supabase/roster.example.sql`), hoặc admin tự thêm trong app.
 4. Nhóm Google (`all@`, `sales@`, `mkt@`, `managers@`) + 3 Shared Drive, thêm `sale05@` làm Người quản lý nội dung; gửi ID 2 drive để điền `drive.folders`.
