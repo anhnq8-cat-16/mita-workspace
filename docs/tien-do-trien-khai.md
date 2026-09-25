@@ -15,6 +15,7 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
 | Vault | `project_url` = `https://ufomfswokkqzlwhowtlx.supabase.co`, `cron_secret` (64 ký tự) |
 | Edge Function secrets | `GOOGLE_SERVICE_ACCOUNT_JSON`, `GOOGLE_SYSTEM_USER` = `sale05@mitaexport.com`, `CRON_SECRET` |
 | Google Cloud | Project "My First Project"; service account `mita-system` + key JSON; đã bật lại chặn tạo key; đã bật Gmail API + Google Drive API |
+| Domain-wide delegation | Client ID `105711268843774965483` (`mita-system`), scope `drive` + `gmail.send` – đã cấp 25/09 |
 | Tài khoản | Admin cài đặt: `sale@mitaexport.com`. Tài khoản hệ thống gửi mail/Drive: `sale05@mitaexport.com` (không cần admin) |
 | Cloudflare | Đã tạo **Worker** `mita-workspace` (tài khoản anhnq8.cat), 4 biến build đã nhập. Repo đã có `wrangler.jsonc`, `.node-version`, bỏ `_redirects`. Build `main` + nhánh phát triển đều ✅ |
 | Supabase URL Configuration | Site URL = `https://mita-workspace.anhnq8-cat.workers.dev`; Redirect URL = `https://mita-workspace.anhnq8-cat.workers.dev/**` |
@@ -22,7 +23,6 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
 
 ## Cần kiểm tra lại ⚠️
 
-- [ ] Đã làm **domain-wide delegation** (Unique ID của `mita-system`, scope `drive,gmail.send`) chưa.
 - [ ] Lịch tự động: `select jobname, schedule, active from cron.job;` phải có `mita-tick`.
 
 ## Việc tiếp theo ⏭️
