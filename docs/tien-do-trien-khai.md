@@ -1,6 +1,6 @@
 # Tiến độ triển khai (cập nhật 25/09/2026)
 
-Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đã xong, CI xanh; `main` = `185b015` (Gmail được mời; admin/quản lý tự duyệt được file thư viện của mình).
+Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đã xong, CI xanh; `main` = bản mới nhất nhánh phát triển (25/09: Gmail được mời, tự duyệt thư viện, backup Postgres 17).
 
 **Web đang chạy tại:** `https://mita-workspace.anhnq8-cat.workers.dev` (Cloudflare Worker, build `main` thành công 25/09; người dùng đã mở thử trang chủ và `/thu-vien` – chạy tốt).
 
@@ -42,6 +42,6 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
    - [x] **Tải lên + duyệt ảnh Thư viện chạy tốt** (25/09): file vào `00_Cho-duyet`, duyệt xong chuyển đúng thư mục.
    - [x] Shared Drive ID: **MITA Library** `0AJRZGRnuyxiZUk9PVA`, **MITA Sales Private** `0AGM_4muC0UkKUk9PVA` (25/09) → điền vào `settings.drive.folders`.
    - Gói Business Starter: chia sẻ ngoài tổ chức mặc định cho phép; Gmail không cần là thành viên drive (app dùng `sale05@` thay), chỉ nút *Mở trên Drive* cần quyền Drive.
-5. Sao lưu (`docs/backup.md`): 4 secret đã nhập; sửa `major_version = 17` (Postgres của project là 17.6) → chạy thử trên nhánh phát triển **thành công** (run 36173119887, 25/09). **Cần cập nhật `main`** để lịch 01:00 hằng đêm dùng bản sửa.
+5. Sao lưu (`docs/backup.md`): 4 secret đã nhập; sửa `major_version = 17` (Postgres của project là 17.6) → chạy thử trên nhánh phát triển **thành công** (run 36173119887, 25/09). `main` đã cập nhật (25/09) → lịch 01:00 hằng đêm dùng bản sửa.
 6. Nghiệm thu theo `docs/van-hanh.md`.
 7. (Tùy chọn, sau này) Đổi sang `work.mitaexport.com`: Cloudflare Pages + 1 bản ghi CNAME `work` ở **Nhân Hòa** (không đụng MX), rồi cập nhật lại Site URL, Redirect URL, `APP_ORIGIN`, Google OAuth origin.
