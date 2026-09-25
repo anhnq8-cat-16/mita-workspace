@@ -55,7 +55,10 @@ Thông tin công ty: domain `mitaexport.com`; tài khoản hệ thống `sale05@
 ### 3.2 Màn hình đồng ý OAuth (loại Internal)
 1. Menu ☰ → **APIs & Services → OAuth consent screen** (giao diện mới gọi là **Google Auth Platform**). Bấm **Get started**.
 2. **App name:** `Mita Workspace`. **User support email:** email của bạn. **Next**.
-3. **Audience:** chọn **Internal** ← quan trọng: chỉ người trong tổ chức Workspace đăng nhập được. **Next**.
+3. **Audience:**
+   - **Internal**: chỉ tài khoản `@mitaexport.com` đăng nhập được.
+   - **External** (đang dùng – vì hết license Workspace, nhân viên dùng **Gmail cá nhân**): bất kỳ tài khoản Google nào qua được màn hình Google, nhưng **database chỉ nhận email công ty hoặc email admin đã mời** (`fn_handle_new_user`). Sau khi tạo: **Audience → Publish app** (chuyển *Testing* → *In production*; ứng dụng chỉ xin email/tên/ảnh nên không cần Google xét duyệt).
+   **Next**.
 4. **Contact information:** email của bạn → **Next** → tích đồng ý → **Create**.
 
 ### 3.3 Tạo OAuth Client

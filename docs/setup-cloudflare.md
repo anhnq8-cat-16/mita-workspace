@@ -17,7 +17,7 @@
    | `NODE_VERSION` | `22` |
    | `VITE_SUPABASE_URL` | Project URL của Supabase |
    | `VITE_SUPABASE_ANON_KEY` | khóa anon/publishable |
-   | `VITE_GOOGLE_HD` | `mitaexport.com` |
+   | `VITE_GOOGLE_HD` | `mitaexport.com` – **bỏ trống/xóa** nếu cho nhân viên đăng nhập bằng Gmail cá nhân (biến này khiến Google chỉ hiện tài khoản công ty) |
 6. Bấm **Save and Deploy**. Sau ~1–2 phút có địa chỉ tạm `https://mita-workspace.pages.dev`.
 
 Mọi đường dẫn (ví dụ `/thu-vien`) tự trả về ứng dụng: Pages làm mặc định khi không có `404.html`; Workers dùng `not_found_handling` trong `wrangler.jsonc`. **Không** thêm file `_redirects` kiểu `/* /index.html 200` – Workers báo lỗi "Infinite loop".

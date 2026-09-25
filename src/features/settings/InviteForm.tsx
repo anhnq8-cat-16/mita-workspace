@@ -10,21 +10,14 @@ import { vi } from '@/i18n/vi'
 import type { Role } from '@/lib/database.types'
 import { cn } from '@/lib/utils'
 import { useInviteUser, useSetting, useTeams } from './api'
+import { isPersonalEmail } from './invite-rules'
 
 const ROLES: Role[] = ['staff', 'lead', 'manager', 'admin']
 const t = vi.settings.users
 
-function buildSchema(domains: string[]) {
+function buildSchema() {
   return z.object({
-    email: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .email(t.emailInvalid)
-      .refine(
-        (v) => domains.length === 0 || domains.includes(v.split('@')[1] ?? ''),
-        t.emailWrongDomain(domains.join(', @')),
-      ),
+    email: z.string().trim().toLowerCase().email(t.emailInvalid),
     full_name: z.string().trim(),
     title: z.string().trim(),
     role: z.enum(['admin', 'manager', 'lead', 'staff']),
@@ -107,7 +100,7 @@ export function InviteForm() {
   const invite = useInviteUser()
   const [done, setDone] = useState<string | null>(null)
   const form = useForm<FormValues>({
-    resolver: zodResolver(buildSchema(domains)),
+    resolver: zodResolver(buildSchema()),
     defaultValues: {
       email: '',
       full_name: '',
@@ -119,6 +112,7 @@ export function InviteForm() {
   })
   const { errors } = form.formState
   const leadTeams = useWatch({ control: form.control, name: 'lead_teams' })
+  const email = useWatch({ control: form.control, name: 'email' })
 
   const onSubmit = form.handleSubmit(async (values) => {
     setDone(null)
@@ -148,6 +142,9 @@ export function InviteForm() {
               {...form.register('email')}
             />
             <FieldError>{errors.email?.message}</FieldError>
+            {!errors.email && isPersonalEmail(email ?? '', domains) && (
+              <p className="text-xs text-warning-foreground">{t.personalEmailNote}</p>
+            )}
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="invite-name">{t.fullName}</Label>

@@ -4,7 +4,8 @@
 
 ## Thêm người dùng mới
 1. Đăng nhập bằng tài khoản admin → **Cài đặt → Người dùng → Mời người dùng**.
-2. Nhập email công ty, họ tên, vai trò, chọn team (bấm ★ cạnh team để đặt làm trưởng nhóm) → **Mời người dùng**.
+2. Nhập email công ty **hoặc email Google cá nhân** (vd `ten@gmail.com`), họ tên, vai trò, chọn team (bấm ★ cạnh team để đặt làm trưởng nhóm) → **Mời người dùng**.
+   - Email cá nhân: **chỉ đúng email đã mời** mới đăng nhập được (người lạ có Gmail vẫn bị chặn). Khi nhân viên nghỉ việc, vào **Cài đặt → Người dùng** bấm **Khóa** – công ty không quản lý được tài khoản Gmail của họ.
 3. Báo người đó mở `https://work.mitaexport.com` và bấm **Đăng nhập bằng Google** – tài khoản được kích hoạt ngay.
 
 Nếu người đó đã đăng nhập trước khi được mời (đang thấy màn hình *"Tài khoản đang chờ quản trị kích hoạt"*): vào **Cài đặt → Người dùng → lọc "Chờ kích hoạt"**, chọn vai trò/team rồi bấm **Kích hoạt** (hoặc mời bằng email như trên – hệ thống kích hoạt luôn). Người đó bấm **Kiểm tra lại**.
@@ -132,7 +133,8 @@ Xem [backup.md](backup.md): cài đặt backup hằng đêm lên `MITA Backup`, 
 | Hiện tượng | Nguyên nhân / cách xử lý |
 |---|---|
 | Đăng nhập báo *"Chỉ tài khoản Google của công ty…"* | Email không thuộc domain, hoặc chưa khai báo `allowed_email_domains` (xem `docs/setup-supabase.md` mục 4). |
-| Google báo *"Access blocked / org_internal"* | Đang dùng Gmail cá nhân – OAuth loại Internal chỉ cho tài khoản công ty. |
+| Google báo *"Access blocked / org_internal"* | Đang dùng Gmail cá nhân mà OAuth vẫn là loại **Internal** – đổi sang **External** (`docs/setup-google.md` mục 3.2). |
+| Gmail cá nhân báo *"Email này chưa được mời"* | Chưa mời đúng email đó (kiểm tra chính tả, dấu chấm) → mời lại ở **Cài đặt → Người dùng**. |
 | Đăng nhập xong quay lại trang đăng nhập | Kiểm tra Supabase → Authentication → URL Configuration đã có `https://work.mitaexport.com/auth/callback`. |
 | *redirect_uri_mismatch* | Callback URL của Supabase chưa có trong **Authorized redirect URIs** của OAuth Client. |
 | Màn hình trắng sau deploy | Thiếu biến `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` trên Cloudflare → thêm rồi Retry deployment. |

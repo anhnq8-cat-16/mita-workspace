@@ -82,10 +82,13 @@ export const vi = {
     loginSubtitle: 'Cổng làm việc nội bộ MITAFOOD',
     loginWithGoogle: 'Đăng nhập bằng Google',
     loginHint: (domain: string) =>
-      domain ? `Chỉ dùng tài khoản công ty @${domain}` : 'Chỉ dùng tài khoản Google của công ty',
+      domain
+        ? `Chỉ dùng tài khoản công ty @${domain}`
+        : 'Dùng tài khoản Google công ty hoặc email đã được quản trị mời',
     signingIn: 'Đang đăng nhập…',
     logout: 'Đăng xuất',
-    wrongDomain: 'Chỉ tài khoản Google của công ty mới được đăng nhập.',
+    wrongDomain:
+      'Email này chưa được mời. Hãy dùng tài khoản công ty, hoặc nhờ quản trị mời đúng email Google bạn đang dùng.',
     callbackError: 'Đăng nhập không thành công',
     pendingTitle: 'Tài khoản đang chờ quản trị kích hoạt',
     pendingBody:
@@ -121,7 +124,7 @@ export const vi = {
       title: 'Người dùng',
       invite: 'Mời người dùng',
       inviteHint:
-        'Nhập email công ty. Người được mời đăng nhập Google lần đầu sẽ được kích hoạt ngay với vai trò và team đã chọn.',
+        'Nhập email công ty hoặc email Google cá nhân (vd Gmail). Người được mời đăng nhập Google lần đầu bằng đúng email này sẽ được kích hoạt ngay với vai trò và team đã chọn.',
       email: 'Email',
       fullName: 'Họ tên',
       role: 'Vai trò',
@@ -141,7 +144,8 @@ export const vi = {
         `Khóa tài khoản ${name}? Người này sẽ không dùng được hệ thống.`,
       confirmRevoke: (email: string) => `Hủy lời mời ${email}?`,
       emailInvalid: 'Email không hợp lệ',
-      emailWrongDomain: (domain: string) => `Email phải thuộc domain @${domain}`,
+      personalEmailNote:
+        'Email cá nhân (ngoài domain công ty): chỉ đúng email này đăng nhập được. Khi nhân viên nghỉ, nhớ khóa tài khoản.',
       teamsRequired: 'Chọn ít nhất 1 team',
       noUsers: 'Chưa có người dùng',
       you: '(bạn)',
