@@ -2,7 +2,7 @@
 
 Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đã xong, CI xanh; `main` = `454f6e9`.
 
-**Web đang chạy tại:** `https://mita-workspace.anhnq8-cat.workers.dev` (Cloudflare Worker, build `main` thành công 25/09).
+**Web đang chạy tại:** `https://mita-workspace.anhnq8-cat.workers.dev` (Cloudflare Worker, build `main` thành công 25/09; người dùng đã mở thử trang chủ và `/thu-vien` – chạy tốt).
 
 ## Đã xong ✅
 
