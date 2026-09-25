@@ -621,7 +621,10 @@ export const vi = {
     openDrive: 'Mở trên Drive',
     download: 'Tải xuống',
     openYoutube: 'Mở YouTube',
-    drives: { library: 'Thư viện chung', sales_private: 'Tài liệu nội bộ Sales' },
+    drives: {
+      library: 'Thư viện chung (MITA Library)',
+      sales_private: 'Tài liệu nội bộ Sales (MITA Sales Private)',
+    },
     status: { pending: 'Chờ duyệt', approved: 'Đã duyệt', rejected: 'Bị từ chối' },
     dropHint: 'Kéo-thả file vào đây hoặc bấm để chọn (nhiều file, tối đa 2GB/file)',
     chooseFiles: 'Chọn file',

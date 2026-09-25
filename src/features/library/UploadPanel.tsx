@@ -84,9 +84,9 @@ function CommonFields({
             onChange={(e) => meta.setTags(e.target.value)}
           />
         </div>
-        {meta.canSales && (
-          <div className="grid gap-1.5">
-            <Label htmlFor={`${prefix}-drive`}>{t.drive}</Label>
+        <div className="grid gap-1.5">
+          <Label htmlFor={meta.canSales ? `${prefix}-drive` : undefined}>{t.drive}</Label>
+          {meta.canSales ? (
             <Select
               id={`${prefix}-drive`}
               value={meta.drive}
@@ -95,8 +95,10 @@ function CommonFields({
               <option value="library">{t.drives.library}</option>
               <option value="sales_private">{t.drives.sales_private}</option>
             </Select>
-          </div>
-        )}
+          ) : (
+            <p className="py-2 text-sm">{t.drives.library}</p>
+          )}
+        </div>
       </div>
     </div>
   )
