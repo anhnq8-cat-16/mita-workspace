@@ -38,7 +38,9 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
    - [x] Thử: thêm 1 Gmail vào Test users + mời trong app → **đăng nhập thành công** (25/09).
    - [ ] (Nếu nhân viên cần mở file Drive) Admin → Ứng dụng → Drive và Tài liệu → Chia sẻ: cho phép chia sẻ ra ngoài tổ chức.
 3. **Danh sách nhân viên (hoãn, người dùng bổ sung sau khi chạy):** gửi `Họ tên | email | team | vai trò` → tạo SQL roster (`supabase/roster.example.sql`), hoặc admin tự thêm trong app.
-4. Nhóm Google (`all@`, `sales@`, `mkt@`, `managers@`) + 3 Shared Drive, thêm `sale05@` làm Người quản lý nội dung; gửi ID 2 drive để điền `drive.folders`.
+4. Nhóm Google (`all@`, `sales@`, `mkt@`, `managers@`) + 3 Shared Drive, thêm `sale05@` làm Người quản lý nội dung.
+   - [x] Shared Drive ID: **MITA Library** `0AJRZGRnuyxiZUk9PVA`, **MITA Sales Private** `0AGM_4muC0UkKUk9PVA` (25/09) → điền vào `settings.drive.folders`.
+   - Gói Business Starter: chia sẻ ngoài tổ chức mặc định cho phép; Gmail không cần là thành viên drive (app dùng `sale05@` thay), chỉ nút *Mở trên Drive* cần quyền Drive.
 5. Sao lưu: secrets cho workflow backup (`docs/backup.md`).
 6. Nghiệm thu theo `docs/van-hanh.md`.
 7. (Tùy chọn, sau này) Đổi sang `work.mitaexport.com`: Cloudflare Pages + 1 bản ghi CNAME `work` ở **Nhân Hòa** (không đụng MX), rồi cập nhật lại Site URL, Redirect URL, `APP_ORIGIN`, Google OAuth origin.
