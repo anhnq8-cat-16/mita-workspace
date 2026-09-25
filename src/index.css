@@ -28,6 +28,14 @@ body {
   @apply bg-background font-sans text-foreground antialiased;
 }
 
+/*
+ * Ô con của grid mặc định min-width:auto → một dòng chữ "truncate" dài có thể kéo cả cột
+ * rộng quá màn hình điện thoại. Cho phép co lại (class min-w-* riêng vẫn thắng vì :where).
+ */
+:where(.grid) > * {
+  min-width: 0;
+}
+
 /* Chừa chỗ cho thanh tab dưới trên iPhone có "tai thỏ" */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);

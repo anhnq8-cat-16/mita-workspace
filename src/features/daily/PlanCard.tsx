@@ -126,8 +126,9 @@ function AddItemForm({ afterDeadline }: { afterDeadline: boolean }) {
   return (
     <div className="grid gap-2 border-t border-border pt-3">
       {afterDeadline && <p className="text-xs text-warning-foreground">{t.offPlanWarning}</p>}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2 sm:flex-nowrap">
         <Input
+          className="basis-full sm:basis-auto"
           value={title}
           placeholder={t.addPlaceholder}
           onChange={(e) => setTitle(e.target.value)}
@@ -139,7 +140,7 @@ function AddItemForm({ afterDeadline }: { afterDeadline: boolean }) {
           }}
           aria-label={t.addPlaceholder}
         />
-        <KindSelect value={kind} onChange={setKind} />
+        <KindSelect value={kind} onChange={setKind} className="flex-1 sm:flex-none" />
         <Button size="icon" aria-label={t.addItem} onClick={submit} disabled={add.isPending}>
           <Plus />
         </Button>
@@ -174,9 +175,9 @@ export function PlanCard({ day }: { day: DayDetail }) {
 
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between gap-2">
-        <CardTitle>{t.planTitle}</CardTitle>
-        <div className="flex items-center gap-2">
+      <CardHeader className="flex-row flex-wrap items-center justify-between gap-x-2 gap-y-1">
+        <CardTitle className="whitespace-nowrap">{t.planTitle}</CardTitle>
+        <div className="flex shrink-0 items-center gap-2">
           <span className="text-xs text-muted-foreground">
             {t.submittedAt(formatTimeVN(plan.submitted_at))}
           </span>

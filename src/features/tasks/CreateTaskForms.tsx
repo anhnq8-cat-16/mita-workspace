@@ -254,7 +254,7 @@ export function BulkAssignForm({
                 </Button>
               )}
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               <div className="grid gap-1">
                 <span className="text-[11px] text-muted-foreground">{t.fields.start}</span>
                 <Input
@@ -274,7 +274,7 @@ export function BulkAssignForm({
                   onChange={(e) => setRow(r.key, { due: e.target.value })}
                 />
               </div>
-              <div className="grid gap-1">
+              <div className="col-span-2 grid gap-1 sm:col-span-1">
                 <span className="text-[11px] text-muted-foreground">{t.fields.priority}</span>
                 <Select
                   value={r.priority}

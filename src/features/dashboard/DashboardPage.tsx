@@ -137,7 +137,7 @@ export function DashboardPage() {
       {/* Bento grid */}
       <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-12">
         {/* Mobile: thẻ chỉ số trượt ngang; từ sm: lưới 2 cột; lg: 4 cột */}
-        <div className="col-span-2 -mx-4 grid snap-x snap-mandatory [scrollbar-width:none] auto-cols-[78%] grid-flow-col gap-4 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:p-0 lg:col-span-12 lg:grid-cols-4 [&>*]:snap-start">
+        <div className="col-span-2 -mx-4 grid snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] auto-cols-[78%] grid-flow-col gap-4 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:scroll-px-0 sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:p-0 lg:col-span-12 lg:grid-cols-4 [&>*]:snap-start">
           <KpiRow date={day} team={team} trendEnd={day} sales={showSales ? period : null} />
         </div>
 

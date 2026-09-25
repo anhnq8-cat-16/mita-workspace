@@ -242,8 +242,9 @@ function PlanFormInner({ day, initial }: { day: DayDetail; initial: DraftItem[] 
       </ul>
 
       <div className="grid gap-2">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 sm:flex-nowrap">
           <Input
+            className="basis-full sm:basis-auto"
             value={newTitle}
             placeholder={t.addPlaceholder}
             onChange={(e) => setNewTitle(e.target.value)}
@@ -255,7 +256,7 @@ function PlanFormInner({ day, initial }: { day: DayDetail; initial: DraftItem[] 
             }}
             aria-label={t.addPlaceholder}
           />
-          <KindSelect value={newKind} onChange={setNewKind} />
+          <KindSelect value={newKind} onChange={setNewKind} className="flex-1 sm:flex-none" />
           <Button size="icon" aria-label={t.addItem} onClick={addNew} disabled={!newTitle.trim()}>
             <Plus />
           </Button>

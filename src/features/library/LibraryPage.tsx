@@ -76,7 +76,7 @@ function Browse({
           onChange={(e) => setF({ ...f, q: e.target.value })}
         />
         <Select
-          className="md:w-auto"
+          className="col-span-2 md:w-auto"
           aria-label={t.product}
           value={f.product}
           onChange={(e) => setF({ ...f, product: e.target.value })}

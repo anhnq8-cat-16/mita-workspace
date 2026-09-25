@@ -346,8 +346,8 @@ export function ProductsPage() {
                 )}
                 <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-3 text-xs text-muted-foreground">
                   <span />
-                  <span className="w-28 text-right">{t.retail}</span>
-                  <span className="w-28 text-right">{t.wholesale}</span>
+                  <span className="w-24 text-right sm:w-28">{t.retail}</span>
+                  <span className="w-24 text-right sm:w-28">{t.wholesale}</span>
                 </div>
                 <ul>
                   {items.map((p) => (
@@ -374,14 +374,14 @@ export function ProductsPage() {
                       </button>
                       {edits ? (
                         <>
-                          <span className="w-28">
+                          <span className="w-24 sm:w-28">
                             <PriceInput
                               value={p.retail_price_vnd}
                               label={`${t.retail} ${p.name}`}
                               onChange={(v) => setEdit(p, 'retail', v)}
                             />
                           </span>
-                          <span className="w-28">
+                          <span className="w-24 sm:w-28">
                             <PriceInput
                               value={p.wholesale_price_vnd}
                               label={`${t.wholesale} ${p.name}`}
@@ -391,10 +391,10 @@ export function ProductsPage() {
                         </>
                       ) : (
                         <>
-                          <span className="w-28 text-right">
+                          <span className="w-24 text-right sm:w-28">
                             <Price value={p.retail_price_vnd} />
                           </span>
-                          <span className="w-28 text-right">
+                          <span className="w-24 text-right sm:w-28">
                             <Price value={p.wholesale_price_vnd} />
                           </span>
                         </>

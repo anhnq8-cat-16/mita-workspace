@@ -38,7 +38,7 @@ function Entry({ row, nameOf }: { row: AuditLogRow; nameOf: (id: string) => stri
       >
         <Avatar name={actor} className="size-8" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm">
+          <p className="line-clamp-2 text-sm sm:line-clamp-1">
             <strong className="font-medium">{actor}</strong>{' '}
             <span className="text-muted-foreground">
               {ACTION_LABELS[row.action].toLowerCase()}{' '}
