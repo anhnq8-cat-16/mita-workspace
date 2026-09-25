@@ -16,6 +16,7 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
 | Edge Function secrets | `GOOGLE_SERVICE_ACCOUNT_JSON`, `GOOGLE_SYSTEM_USER` = `sale05@mitaexport.com`, `CRON_SECRET` |
 | Google Cloud | Project "My First Project"; service account `mita-system` + key JSON; đã bật lại chặn tạo key; đã bật Gmail API + Google Drive API |
 | Domain-wide delegation | Client ID `105711268843774965483` (`mita-system`), scope `drive` + `gmail.send` – đã cấp 25/09 |
+| Google OAuth (đăng nhập) | Client `Supabase` (Web application, Client ID `1055501173426-4qs…`), origin workers.dev + redirect Supabase callback; đã dán vào Supabase → Providers → Google – xong 25/09 |
 | Tài khoản | Admin cài đặt: `sale@mitaexport.com`. Tài khoản hệ thống gửi mail/Drive: `sale05@mitaexport.com` (không cần admin) |
 | Cloudflare | Đã tạo **Worker** `mita-workspace` (tài khoản anhnq8.cat), 4 biến build đã nhập. Repo đã có `wrangler.jsonc`, `.node-version`, bỏ `_redirects`. Build `main` + nhánh phát triển đều ✅ |
 | Supabase URL Configuration | Site URL = `https://mita-workspace.anhnq8-cat.workers.dev`; Redirect URL = `https://mita-workspace.anhnq8-cat.workers.dev/**` |
@@ -27,8 +28,8 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
 
 ## Việc tiếp theo ⏭️
 
-1. **Đăng nhập Google (đang làm):** tạo OAuth Client (Internal, Web application) → *Authorized JavaScript origins* = `https://mita-workspace.anhnq8-cat.workers.dev`, *Redirect URI* = Callback URL lấy ở Supabase → Authentication → Providers → Google → dán Client ID/secret vào Supabase (`docs/setup-google.md` mục 3).
-2. **Danh sách nhân viên:** gửi `Họ tên | email | team | vai trò` → tạo SQL roster (`supabase/roster.example.sql`).
+1. **Tạo 1 tài khoản admin** (bắt buộc trước lần đăng nhập đầu): chạy SQL `insert into public.invitations … role 'admin'` với email `@mitaexport.com` của người quản trị. Danh sách nhân viên đầy đủ để sau – admin mời/kích hoạt dần ở **Cài đặt → Người dùng**.
+2. **Danh sách nhân viên (hoãn, người dùng bổ sung sau khi chạy):** gửi `Họ tên | email | team | vai trò` → tạo SQL roster (`supabase/roster.example.sql`), hoặc admin tự thêm trong app.
 3. Đăng nhập thử bằng tài khoản `@mitaexport.com`.
 4. Nhóm Google (`all@`, `sales@`, `mkt@`, `managers@`) + 3 Shared Drive, thêm `sale05@` làm Người quản lý nội dung; gửi ID 2 drive để điền `drive.folders`.
 5. Sao lưu: secrets cho workflow backup (`docs/backup.md`).
