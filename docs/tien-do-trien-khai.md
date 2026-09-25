@@ -32,9 +32,10 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
    - Sửa `settings.app_origin` (migration đặt sẵn `https://work.mitaexport.com`) → `https://mita-workspace.anhnq8-cat.workers.dev` để link trong email đúng.
    - Gửi email thử bằng `fn_notify_user(..., p_email => true, p_mandatory => true)`, xem bảng `outbox`.
 2. **Cho phép Gmail cá nhân (cách A, 25/09 – hết license Workspace, đã dùng 5/5):** code đã sửa (migration `20261002000100_invited_personal_email.sql` + form mời). Người dùng cần làm:
-   - [ ] Cloudflare Worker → Settings → Build → Variables: **xóa `VITE_GOOGLE_HD`** → build lại.
+   - [x] Cloudflare Worker: đã xóa `VITE_GOOGLE_HD`; build `main` `bf9d2f5` ✅ (25/09).
    - [x] Google Auth Platform → **Audience** → *Make external* – đang ở chế độ **Testing** (không chọn được In production). ⇒ Mỗi Gmail nhân viên phải thêm vào **Audience → Test users** (tối đa 100).
-   - [ ] Chạy workflow **Cài đặt / cập nhật Supabase** (áp migration mới) – cần `main` đã cập nhật.
+   - [x] Workflow **Cài đặt / cập nhật Supabase** trên `main` ✅ – 14/14 migration (gồm `20261002000100`).
+   - [ ] Thử: thêm 1 Gmail vào Test users + mời trong app → đăng nhập.
    - [ ] (Nếu nhân viên cần mở file Drive) Admin → Ứng dụng → Drive và Tài liệu → Chia sẻ: cho phép chia sẻ ra ngoài tổ chức.
 3. **Danh sách nhân viên (hoãn, người dùng bổ sung sau khi chạy):** gửi `Họ tên | email | team | vai trò` → tạo SQL roster (`supabase/roster.example.sql`), hoặc admin tự thêm trong app.
 4. Nhóm Google (`all@`, `sales@`, `mkt@`, `managers@`) + 3 Shared Drive, thêm `sale05@` làm Người quản lý nội dung; gửi ID 2 drive để điền `drive.folders`.
