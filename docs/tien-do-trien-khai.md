@@ -1,6 +1,6 @@
 # Tiến độ triển khai (cập nhật 25/09/2026)
 
-Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đã xong, CI xanh; `main` = `bf9d2f5` (có phần cho phép Gmail được mời).
+Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đã xong, CI xanh; `main` = `185b015` (Gmail được mời; admin/quản lý tự duyệt được file thư viện của mình).
 
 **Web đang chạy tại:** `https://mita-workspace.anhnq8-cat.workers.dev` (Cloudflare Worker, build `main` thành công 25/09; người dùng đã mở thử trang chủ và `/thu-vien` – chạy tốt).
 
