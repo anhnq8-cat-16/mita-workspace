@@ -28,9 +28,10 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
 
 ## Việc tiếp theo ⏭️
 
-1. **Tạo 1 tài khoản admin** (bắt buộc trước lần đăng nhập đầu): chạy SQL `insert into public.invitations … role 'admin'` với email `@mitaexport.com` của người quản trị. Danh sách nhân viên đầy đủ để sau – admin mời/kích hoạt dần ở **Cài đặt → Người dùng**.
+1. ~~Tạo admin + đăng nhập thử~~ – **xong 25/09**: admin đã đăng nhập, vào được Thư viện.
+   - Sửa `settings.app_origin` (migration đặt sẵn `https://work.mitaexport.com`) → `https://mita-workspace.anhnq8-cat.workers.dev` để link trong email đúng.
+   - Gửi email thử bằng `fn_notify_user(..., p_email => true, p_mandatory => true)`, xem bảng `outbox`.
 2. **Danh sách nhân viên (hoãn, người dùng bổ sung sau khi chạy):** gửi `Họ tên | email | team | vai trò` → tạo SQL roster (`supabase/roster.example.sql`), hoặc admin tự thêm trong app.
-3. Đăng nhập thử bằng tài khoản `@mitaexport.com`.
 4. Nhóm Google (`all@`, `sales@`, `mkt@`, `managers@`) + 3 Shared Drive, thêm `sale05@` làm Người quản lý nội dung; gửi ID 2 drive để điền `drive.folders`.
 5. Sao lưu: secrets cho workflow backup (`docs/backup.md`).
 6. Nghiệm thu theo `docs/van-hanh.md`.
