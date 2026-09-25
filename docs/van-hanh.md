@@ -5,6 +5,7 @@
 ## Thêm người dùng mới
 1. Đăng nhập bằng tài khoản admin → **Cài đặt → Người dùng → Mời người dùng**.
 2. Nhập email công ty **hoặc email Google cá nhân** (vd `ten@gmail.com`), họ tên, vai trò, chọn team (bấm ★ cạnh team để đặt làm trưởng nhóm) → **Mời người dùng**.
+   - Email cá nhân: nếu Google OAuth đang ở chế độ **Testing**, thêm email đó vào **Google Cloud → Google Auth Platform → Audience → Test users** (tối đa 100 người), nếu không Google sẽ chặn trước khi vào app.
    - Email cá nhân: **chỉ đúng email đã mời** mới đăng nhập được (người lạ có Gmail vẫn bị chặn). Khi nhân viên nghỉ việc, vào **Cài đặt → Người dùng** bấm **Khóa** – công ty không quản lý được tài khoản Gmail của họ.
 3. Báo người đó mở `https://work.mitaexport.com` và bấm **Đăng nhập bằng Google** – tài khoản được kích hoạt ngay.
 

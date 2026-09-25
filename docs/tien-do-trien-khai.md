@@ -1,6 +1,6 @@
 # Tiến độ triển khai (cập nhật 25/09/2026)
 
-Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đã xong, CI xanh; `main` = `454f6e9`.
+Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đã xong, CI xanh; `main` = `bf9d2f5` (có phần cho phép Gmail được mời).
 
 **Web đang chạy tại:** `https://mita-workspace.anhnq8-cat.workers.dev` (Cloudflare Worker, build `main` thành công 25/09; người dùng đã mở thử trang chủ và `/thu-vien` – chạy tốt).
 
@@ -33,7 +33,7 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
    - Gửi email thử bằng `fn_notify_user(..., p_email => true, p_mandatory => true)`, xem bảng `outbox`.
 2. **Cho phép Gmail cá nhân (cách A, 25/09 – hết license Workspace, đã dùng 5/5):** code đã sửa (migration `20261002000100_invited_personal_email.sql` + form mời). Người dùng cần làm:
    - [ ] Cloudflare Worker → Settings → Build → Variables: **xóa `VITE_GOOGLE_HD`** → build lại.
-   - [ ] Google Auth Platform → **Audience** → *Make external* → **Publish app**.
+   - [x] Google Auth Platform → **Audience** → *Make external* – đang ở chế độ **Testing** (không chọn được In production). ⇒ Mỗi Gmail nhân viên phải thêm vào **Audience → Test users** (tối đa 100).
    - [ ] Chạy workflow **Cài đặt / cập nhật Supabase** (áp migration mới) – cần `main` đã cập nhật.
    - [ ] (Nếu nhân viên cần mở file Drive) Admin → Ứng dụng → Drive và Tài liệu → Chia sẻ: cho phép chia sẻ ra ngoài tổ chức.
 3. **Danh sách nhân viên (hoãn, người dùng bổ sung sau khi chạy):** gửi `Họ tên | email | team | vai trò` → tạo SQL roster (`supabase/roster.example.sql`), hoặc admin tự thêm trong app.
