@@ -10,6 +10,7 @@ import { ErrorBox, Spinner } from '@/components/ui/spinner'
 import { Tabs } from '@/components/ui/tabs'
 import { useMe } from '@/features/auth/auth-context'
 import { PlanBadge, ReportBadge } from '@/features/daily/badges'
+import { useDailyEnabled } from '@/features/daily/daily-flag'
 import { LeaveForm } from '@/features/daily/LeaveForm'
 import { MyComplianceCard } from '@/features/dashboard/MyComplianceCard'
 import { useSetting, useUsers } from '@/features/settings/api'
@@ -278,6 +279,19 @@ export function ReportsPage() {
   const canTeam = me.role !== 'staff'
   const raw = params.get('tab')
   const tab: Tab = raw === 'team' && canTeam ? 'team' : raw === 'leaves' ? 'leaves' : 'mine'
+
+  const daily = useDailyEnabled()
+
+  // Kế hoạch/Báo cáo ngày đang tạm ẩn → trang chỉ còn Nghỉ phép
+  if (daily === false) {
+    return (
+      <div className="mx-auto grid max-w-3xl gap-4">
+        <h1 className="text-xl font-semibold">{vi.nav.leaves}</h1>
+        {canTeam && <PendingLeaves />}
+        <LeavesTab />
+      </div>
+    )
+  }
 
   const items: { value: Tab; label: string }[] = [
     { value: 'mine', label: t.tabs.mine },

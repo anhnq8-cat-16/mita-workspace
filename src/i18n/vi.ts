@@ -41,7 +41,8 @@ export const vi = {
     dashboard: 'Quản lý',
     audit: 'Nhật ký',
     settings: 'Cài đặt',
-  } satisfies Record<NavKey, string>,
+    leaves: 'Nghỉ phép',
+  } satisfies Record<NavKey | 'leaves', string>,
 
   navShort: {
     today: 'Hôm nay',
@@ -731,6 +732,8 @@ export const vi = {
       avgScore: 'Tuân thủ TB · 4 tuần',
       revenueMonth: 'Doanh số tháng',
       overdue: 'Việc quá hạn',
+      due: 'Việc đến hạn',
+      dueFoot: (n: number) => `${n} người có việc đến hạn`,
       planFoot: (late: number, none: number) => `${late} trễ · ${none} chưa nộp`,
       reportFoot: (late: number, none: number) => `${late} trễ · ${none} chưa nộp`,
       overdueFoot: (n: number) => `${n} người có việc quá hạn`,
@@ -791,6 +794,8 @@ export const vi = {
       title: 'Điểm tuân thủ',
       hint: (w: { plan: number; report: number; tasks: number; off_plan: number }) =>
         `Trọng số: Kế hoạch ${w.plan} · Báo cáo ${w.report} · Việc đúng hạn ${w.tasks} · Trong kế hoạch ${w.off_plan}. Chỉ tính ngày làm việc, trừ ngày nghỉ đã duyệt; báo cáo hôm nay được tính khi hết ngày.`,
+      hintTasksOnly:
+        'Kế hoạch & báo cáo ngày đang tạm ẩn: điểm chỉ tính Việc đúng hạn (ngày làm việc, trừ ngày nghỉ đã duyệt).',
       score: 'Điểm',
       plan: 'Kế hoạch',
       report: 'Báo cáo',

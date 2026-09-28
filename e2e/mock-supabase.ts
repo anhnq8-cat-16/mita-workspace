@@ -133,8 +133,24 @@ const tasks = [
   taskRow({ id: 't2', title: 'Gọi 10 quán cũ', team_id: 'sales_domestic', assignee_id: 'u-admin' }),
 ]
 
-export async function mockSupabase(page: Page, who: keyof typeof USERS): Promise<MockState> {
+export async function mockSupabase(
+  page: Page,
+  who: keyof typeof USERS,
+  opts: { daily?: boolean } = {},
+): Promise<MockState> {
   const me = USERS[who]
+  const settingRows =
+    opts.daily === false
+      ? [
+          ...settings,
+          {
+            key: 'daily_enabled',
+            value: false,
+            description: '',
+            updated_at: settings[0].updated_at,
+          },
+        ]
+      : settings
   const state: MockState = { planSubmits: [], reportSubmits: [], writes: [] }
   let plan: Record<string, unknown> | null = null
   let report: Record<string, unknown> | null = null
@@ -298,7 +314,7 @@ export async function mockSupabase(page: Page, who: keyof typeof USERS): Promise
       { id: 'marketing', name: 'Marketing' },
       { id: 'sales_domestic', name: 'Sale nội địa' },
     ],
-    settings: () => settings,
+    settings: () => settingRows,
     campaigns: () => [campaign],
     campaign_milestones: () => milestones,
     tasks: () => tasks,

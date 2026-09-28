@@ -70,6 +70,8 @@ create or replace function tests.seed_roster() returns void
 language plpgsql security definer set search_path = public as $$
 begin
   update public.settings set value = '["mita.test"]' where key = 'allowed_email_domains';
+  -- Test chạy với Kế hoạch/Báo cáo ngày đang bật (bản cài thật mặc định tắt)
+  update public.settings set value = 'true' where key = 'daily_enabled';
   perform tests.create_user('admin@mita.test', 'admin', '{sales_domestic,marketing}');
   perform tests.create_user('manager@mita.test', 'manager', '{sales_domestic,marketing,export}');
   perform tests.create_user('trang@mita.test', 'lead', '{sales_domestic,marketing,export}',

@@ -5,8 +5,8 @@ import { AuthCallback } from '@/features/auth/AuthCallback'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RequireAuth } from '@/features/auth/RequireAuth'
 import { DailyGate } from '@/features/daily/DailyGate'
-import { HomePage } from '@/features/home/HomePage'
 import { AppLayout } from './AppLayout'
+import { HomeRoute } from './HomeRoute'
 import {
   AuditPage,
   CheckInPage,
@@ -58,7 +58,7 @@ export const routes: RouteObject[] = [
         element: <AppLayout />,
         errorElement: <RouteError />,
         children: [
-          { index: true, element: <HomePage /> },
+          { index: true, element: <HomeRoute /> },
           { path: 'viec', element: <TasksPage /> },
           { path: 'muc-tieu', element: <GoalsPage /> },
           {

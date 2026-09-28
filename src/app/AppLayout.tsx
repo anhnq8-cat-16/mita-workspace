@@ -5,13 +5,29 @@ import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { teamIds, useAuth, useMe } from '@/features/auth/auth-context'
+import { useDailyEnabled } from '@/features/daily/daily-flag'
 import { NotificationBell } from '@/features/notifications/NotificationBell'
+import { InstallBanner } from '@/features/pwa/InstallBanner'
 import { vi } from '@/i18n/vi'
-import { bottomTabs, visibleNav, type NavItem } from '@/lib/nav'
+import { bottomTabs, visibleNav, type NavItem, type NavKey } from '@/lib/nav'
 import { cn } from '@/lib/utils'
 import { NAV_ICONS } from './nav-icons'
 
-function SideLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
+/** Tên mục menu; khi Kế hoạch/Báo cáo ngày tạm ẩn, trang Báo cáo chỉ còn Nghỉ phép */
+function navLabel(key: NavKey, daily: boolean, short = false): string {
+  if (key === 'reports' && !daily) return vi.nav.leaves
+  return (short ? vi.navShort : vi.nav)[key]
+}
+
+function SideLink({
+  item,
+  daily,
+  onClick,
+}: {
+  item: NavItem
+  daily: boolean
+  onClick?: () => void
+}) {
   const Icon = NAV_ICONS[item.key]
   return (
     <NavLink
@@ -26,7 +42,7 @@ function SideLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
       }
     >
       <Icon className="size-5" />
-      {vi.nav[item.key]}
+      {navLabel(item.key, daily)}
     </NavLink>
   )
 }
@@ -59,7 +75,8 @@ export function AppLayout() {
   const handle = useMatches()
     .map((m) => m.handle as RouteHandle | undefined)
     .reduce<RouteHandle>((acc, h) => ({ ...acc, ...h }), {})
-  const navUser = { role: me.role, teams: teamIds(me) }
+  const daily = useDailyEnabled() !== false
+  const navUser = { role: me.role, teams: teamIds(me), daily }
   const items = visibleNav(navUser)
   const tabs = bottomTabs(navUser)
   const [moreOpen, setMoreOpen] = useState(false)
@@ -74,7 +91,7 @@ export function AppLayout() {
         </div>
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-2">
           {items.map((item) => (
-            <SideLink key={item.key} item={item} />
+            <SideLink key={item.key} item={item} daily={daily} />
           ))}
         </nav>
         <UserBox />
@@ -108,6 +125,12 @@ export function AppLayout() {
               </div>
             }
           >
+            {/* Gợi ý cài app nằm ở trang Hôm nay; khi trang đó tạm ẩn thì hiện ở đây */}
+            {!daily && (
+              <div className="mb-4">
+                <InstallBanner />
+              </div>
+            )}
             <Outlet />
           </Suspense>
         </main>
@@ -131,7 +154,7 @@ export function AppLayout() {
                 }
               >
                 <Icon className="size-5" />
-                {vi.navShort[item.key]}
+                {navLabel(item.key, daily, true)}
               </NavLink>
             )
           })}
@@ -169,7 +192,12 @@ export function AppLayout() {
             </div>
             <nav className="grid gap-1 px-2 pb-2">
               {items.map((item) => (
-                <SideLink key={item.key} item={item} onClick={() => setMoreOpen(false)} />
+                <SideLink
+                  key={item.key}
+                  item={item}
+                  daily={daily}
+                  onClick={() => setMoreOpen(false)}
+                />
               ))}
             </nav>
             <UserBox />

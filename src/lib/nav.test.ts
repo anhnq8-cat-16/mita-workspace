@@ -1,4 +1,4 @@
-import { bottomTabs, canAccess, navKeyForPath, visibleNav } from './nav'
+import { bottomTabs, canAccess, homePath, navKeyForPath, visibleNav } from './nav'
 
 const keys = (items: { key: string }[]) => items.map((i) => i.key)
 
@@ -49,6 +49,19 @@ describe('điều hướng theo vai trò', () => {
     const u = { role: 'staff' as const, teams: ['export'] }
     expect(keys(bottomTabs(u))).toEqual(['today', 'tasks', 'library', 'products'])
     expect(canAccess('sales', u)).toBe(false)
+  })
+
+  it('tạm ẩn Hôm nay: bỏ khỏi menu, tab dưới được bù, trang mở đầu là tab đầu', () => {
+    const sale = { role: 'staff' as const, teams: ['sales_domestic'], daily: false }
+    expect(keys(visibleNav(sale))).not.toContain('today')
+    expect(keys(bottomTabs(sale))).toEqual(['sales', 'checkin', 'tasks', 'goals'])
+    expect(homePath(sale)).toBe('/khach')
+    const mgr = { role: 'manager' as const, teams: [], daily: false }
+    expect(keys(bottomTabs(mgr))).toEqual(['dashboard', 'tasks', 'sales', 'goals'])
+    expect(homePath(mgr)).toBe('/quan-ly')
+    const mkt = { role: 'staff' as const, teams: ['marketing'], daily: false }
+    expect(keys(bottomTabs(mkt))).toEqual(['tasks', 'library', 'reports', 'goals'])
+    expect(homePath({ role: 'staff', teams: ['marketing'] })).toBe('/')
   })
 
   it('navKeyForPath', () => {

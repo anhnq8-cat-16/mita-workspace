@@ -7,6 +7,7 @@ import { useAuth } from '@/features/auth/auth-context'
 import { vi } from '@/i18n/vi'
 import { formatDateVN, weekdayVN } from '@/lib/date-vn'
 import { useMyDay } from './api'
+import { useDailyEnabled } from './daily-flag'
 import { gateBlocks } from './day-status'
 import { LeaveForm } from './LeaveForm'
 import { DeadlineHint, PlanForm } from './PlanForm'
@@ -65,9 +66,15 @@ function PlanGatePage({ day }: { day: DayDetail }) {
   )
 }
 
-/** Cổng kế hoạch ngày: chặn toàn bộ ứng dụng cho đến khi nộp kế hoạch hôm nay */
+/**
+ * Cổng kế hoạch ngày: chặn toàn bộ ứng dụng cho đến khi nộp kế hoạch hôm nay.
+ * Tính năng đang tạm ẩn (settings.daily_enabled = false) → không chặn.
+ */
 export function DailyGate({ children }: { children: ReactNode }) {
-  const day = useMyDay()
+  const daily = useDailyEnabled()
+  const day = useMyDay(daily === true)
+  if (daily === undefined) return <FullPageSpinner />
+  if (!daily) return <>{children}</>
   if (day.isPending) return <FullPageSpinner />
   if (day.error) {
     return (

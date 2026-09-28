@@ -14,9 +14,10 @@ export const dailyKeys = {
   myOpenTasks: ['tasks', 'mine', 'open'] as const,
 }
 
-export function useMyDay() {
+export function useMyDay(enabled = true) {
   return useQuery({
     queryKey: dailyKeys.myDay,
+    enabled,
     queryFn: async (): Promise<DayDetail> => {
       const { data, error } = await supabase.rpc('fn_my_day')
       throwIfError(error)

@@ -22,6 +22,7 @@ import { ErrorBox, Spinner } from '@/components/ui/spinner'
 import { useWeekMilestones } from '@/features/campaigns/api'
 import { useCheckIns } from '@/features/checkin/api'
 import { PlanBadge, ReportBadge } from '@/features/daily/badges'
+import { useDailyEnabled } from '@/features/daily/daily-flag'
 import { useWeeklyGoals } from '@/features/goals/api'
 import { goalPercent } from '@/features/goals/goal-math'
 import { useUsers } from '@/features/settings/api'
@@ -130,6 +131,7 @@ export function KpiRow({
   trendEnd: string
   sales: Period | null
 }) {
+  const daily = useDailyEnabled() !== false
   const people = useDashboardPeople(date)
   const trend = useComplianceTrend(trendEnd)
   const salesQ = useSalesSummary(sales?.from ?? '', sales?.to ?? '', Boolean(sales))
@@ -142,8 +144,55 @@ export function KpiRow({
   const last = [...avg].reverse().find((x) => x.value !== null)?.value ?? null
   const overduePeople = rows.filter((x) => x.tasks_overdue > 0).length
   const overdueTotal = rows.reduce((s, x) => s + x.tasks_overdue, 0)
+  const duePeople = rows.filter((x) => x.tasks_due > 0).length
+  const dueTotal = rows.reduce((s, x) => s + x.tasks_due, 0)
   const s = salesQ.data
   const kpiPct = s && s.kpi_month > 0 ? (100 * s.revenue_month) / s.kpi_month : 0
+
+  const overdueTile = (delay: number) => (
+    <KpiTile
+      delay={delay}
+      label={t.kpi.overdue}
+      value={overdueTotal}
+      tone={overdueTotal ? 'bad' : undefined}
+      foot={t.kpi.overdueFoot(overduePeople)}
+    />
+  )
+
+  if (!daily) {
+    // Kế hoạch/Báo cáo ngày tạm ẩn: thay 2 ô đó bằng "Việc đến hạn"
+    return (
+      <>
+        <KpiTile
+          delay={0}
+          label={`${t.kpi.due} · ${formatDateVN(date).slice(0, 5)}`}
+          value={dueTotal}
+          foot={t.kpi.dueFoot(duePeople)}
+        />
+        <KpiTile
+          delay={60}
+          label={t.kpi.avgScore}
+          value={formatScore(last)}
+          foot={<ScoreBadge score={last} bands={bands} />}
+          visual={avg.length > 0 ? <MiniArea points={avg} /> : undefined}
+        />
+        {overdueTile(120)}
+        {sales && (
+          <KpiTile
+            delay={180}
+            label={t.kpi.revenueMonth}
+            value={s ? `${compactVND(s.revenue_month)}` : '—'}
+            foot={
+              s
+                ? `${formatVND(s.revenue_month)} / ${t.kpi.kpiOf(compactVND(s.kpi_month))}`
+                : undefined
+            }
+            visual={s ? <Ring percent={kpiPct} label={t.kpi.revenueMonth} /> : undefined}
+          />
+        )}
+      </>
+    )
+  }
 
   return (
     <>
@@ -197,13 +246,7 @@ export function KpiRow({
           visual={s ? <Ring percent={kpiPct} label={t.kpi.revenueMonth} /> : undefined}
         />
       ) : (
-        <KpiTile
-          delay={180}
-          label={t.kpi.overdue}
-          value={overdueTotal}
-          tone={overdueTotal ? 'bad' : undefined}
-          foot={t.kpi.overdueFoot(overduePeople)}
-        />
+        overdueTile(180)
       )}
     </>
   )
@@ -221,6 +264,7 @@ export function PeopleBlock({
   team: string
   className?: string
 }) {
+  const daily = useDailyEnabled() !== false
   const q = useDashboardPeople(date)
   const rows = (q.data ?? []).filter((r) => !team || r.teams.includes(team))
   const c = planCounts(rows)
@@ -229,8 +273,7 @@ export function PeopleBlock({
     t.people.person,
     t.csv.email,
     t.goals.team,
-    t.people.plan,
-    t.people.report,
+    ...(daily ? [t.people.plan, t.people.report] : []),
     t.people.due,
     t.people.overdue,
     t.people.lastCheckin,
@@ -245,7 +288,7 @@ export function PeopleBlock({
       icon={Users}
       title={t.people.title(formatDateVN(date))}
       subtitle={
-        q.data
+        q.data && daily
           ? t.people.summary(
               c.onTime + c.late,
               c.required,
@@ -262,8 +305,7 @@ export function PeopleBlock({
               name(r),
               r.email,
               teamNames(r.teams),
-              planText(r),
-              reportText(r),
+              ...(daily ? [planText(r), reportText(r)] : []),
               r.tasks_due,
               r.tasks_overdue,
               r.last_checkin_at
@@ -281,19 +323,21 @@ export function PeopleBlock({
       )}
       {rows.length > 0 && (
         <div className="grid gap-5">
-          <StatusBar
-            segments={[
-              { key: 'on', label: vi.daily.planOnTime, value: c.onTime, color: STATUS.good },
-              { key: 'late', label: vi.daily.planLate, value: c.late, color: STATUS.warn },
-              {
-                key: 'none',
-                label: vi.daily.planNone,
-                value: c.none,
-                color: STATUS.bad,
-              },
-              { key: 'leave', label: vi.daily.planLeave, value: c.leave, color: STATUS.none },
-            ]}
-          />
+          {daily && (
+            <StatusBar
+              segments={[
+                { key: 'on', label: vi.daily.planOnTime, value: c.onTime, color: STATUS.good },
+                { key: 'late', label: vi.daily.planLate, value: c.late, color: STATUS.warn },
+                {
+                  key: 'none',
+                  label: vi.daily.planNone,
+                  value: c.none,
+                  color: STATUS.bad,
+                },
+                { key: 'leave', label: vi.daily.planLeave, value: c.leave, color: STATUS.none },
+              ]}
+            />
+          )}
           {/* Mobile: danh sách */}
           <ul className="-mx-2 grid gap-1 md:hidden">
             {rows.map((r) => (
@@ -305,9 +349,11 @@ export function PeopleBlock({
                   <Avatar name={name(r)} src={r.avatar_url} className="size-9" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{name(r)}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-1">
-                      <PersonBadges r={r} />
-                    </div>
+                    {daily && (
+                      <div className="mt-1 flex flex-wrap items-center gap-1">
+                        <PersonBadges r={r} />
+                      </div>
+                    )}
                     <p className="mt-1 text-xs text-muted-foreground">
                       <PersonNumbers r={r} />
                     </p>
@@ -323,8 +369,12 @@ export function PeopleBlock({
               <thead className="text-left text-xs text-muted-foreground">
                 <tr className="border-b border-slate-100">
                   <th className="px-2 pb-2 font-medium">{t.people.person}</th>
-                  <th className="px-2 pb-2 font-medium">{t.people.plan}</th>
-                  <th className="px-2 pb-2 font-medium">{t.people.report}</th>
+                  {daily && (
+                    <>
+                      <th className="px-2 pb-2 font-medium">{t.people.plan}</th>
+                      <th className="px-2 pb-2 font-medium">{t.people.report}</th>
+                    </>
+                  )}
                   <th className="px-2 pb-2 text-right font-medium">{t.people.due}</th>
                   <th className="px-2 pb-2 text-right font-medium">{t.people.overdue}</th>
                   <th className="px-2 pb-2 font-medium">{t.people.lastCheckin}</th>
@@ -342,21 +392,25 @@ export function PeopleBlock({
                         <span className="truncate hover:text-primary">{name(r)}</span>
                       </Link>
                     </td>
-                    <td className="px-2 py-2.5">
-                      <PlanBadge
-                        submitted={Boolean(r.plan_id)}
-                        isLate={r.plan_is_late}
-                        onLeave={Boolean(r.leave_type)}
-                        required={r.plan_required}
-                      />
-                    </td>
-                    <td className="px-2 py-2.5">
-                      <ReportBadge
-                        submitted={Boolean(r.report_submitted_at)}
-                        status={r.report_status}
-                        required={r.plan_required}
-                      />
-                    </td>
+                    {daily && (
+                      <>
+                        <td className="px-2 py-2.5">
+                          <PlanBadge
+                            submitted={Boolean(r.plan_id)}
+                            isLate={r.plan_is_late}
+                            onLeave={Boolean(r.leave_type)}
+                            required={r.plan_required}
+                          />
+                        </td>
+                        <td className="px-2 py-2.5">
+                          <ReportBadge
+                            submitted={Boolean(r.report_submitted_at)}
+                            status={r.report_status}
+                            required={r.plan_required}
+                          />
+                        </td>
+                      </>
+                    )}
                     <td className="px-2 py-2.5 text-right tabular-nums">{r.tasks_due}</td>
                     <td
                       className={cn(
@@ -470,12 +524,16 @@ function InboxLink({ to, children }: { to: string; children: React.ReactNode }) 
 }
 
 export function InboxBlock({ className }: { className?: string }) {
+  const daily = useDailyEnabled() !== false
   const q = useDashboardInbox()
   const resolve = useResolveEscalation()
   const d = q.data
+  // Kế hoạch/Báo cáo ngày tạm ẩn → không hiện mục "chưa xem"
+  const plans = daily ? (d?.plans ?? []) : []
+  const reports = daily ? (d?.reports ?? []) : []
   const total = d
-    ? d.plans.length +
-      d.reports.length +
+    ? plans.length +
+      reports.length +
       d.decisions.length +
       d.tasks_review.length +
       d.library_pending +
@@ -492,13 +550,13 @@ export function InboxBlock({ className }: { className?: string }) {
         e.reason,
       ]),
       ...d.decisions.map((x) => [t.inbox.decisions, x.name, formatDateVN(x.date), x.text]),
-      ...d.plans.map((x) => [
+      ...plans.map((x) => [
         t.inbox.plans,
         x.name,
         formatDateVN(x.date),
         x.is_late ? t.inbox.late : '',
       ]),
-      ...d.reports.map((x) => [
+      ...reports.map((x) => [
         t.inbox.reports,
         x.name,
         formatDateVN(x.date),
@@ -610,8 +668,8 @@ export function InboxBlock({ className }: { className?: string }) {
               </InboxLink>
             ))}
           </InboxSection>
-          <InboxSection title={t.inbox.plans} count={d.plans.length}>
-            {d.plans.map((x) => (
+          <InboxSection title={t.inbox.plans} count={plans.length}>
+            {plans.map((x) => (
               <InboxLink key={x.id} to={`/bao-cao/${x.user_id}/${x.date}`}>
                 <strong className="font-medium">{x.name}</strong>
                 <span className="text-muted-foreground"> · {formatDateVN(x.date)}</span>
@@ -619,8 +677,8 @@ export function InboxBlock({ className }: { className?: string }) {
               </InboxLink>
             ))}
           </InboxSection>
-          <InboxSection title={t.inbox.reports} count={d.reports.length}>
-            {d.reports.map((x) => (
+          <InboxSection title={t.inbox.reports} count={reports.length}>
+            {reports.map((x) => (
               <InboxLink key={x.id} to={`/bao-cao/${x.user_id}/${x.date}`}>
                 <strong className="font-medium">{x.name}</strong>
                 <span className="text-muted-foreground"> · {formatDateVN(x.date)}</span>
@@ -641,7 +699,7 @@ export function InboxBlock({ className }: { className?: string }) {
           </InboxSection>
           <InboxSection title={t.inbox.leaves} count={d.leaves_pending.length}>
             {d.leaves_pending.map((x) => (
-              <InboxLink key={x.id} to="/bao-cao?tab=team">
+              <InboxLink key={x.id} to={daily ? '/bao-cao?tab=team' : '/bao-cao'}>
                 <strong className="font-medium">{x.name}</strong>
                 <span className="text-muted-foreground">
                   {' '}
@@ -679,6 +737,7 @@ export function ComplianceBlock({
   team: string
   className?: string
 }) {
+  const daily = useDailyEnabled() !== false
   const bands = useBands()
   const weights = useWeights()
   const q = useComplianceScores(from, to)
@@ -690,7 +749,7 @@ export function ComplianceBlock({
       label: t.compliance.weekOf(formatDateVN(w).slice(0, 5)),
       value: trend.data?.find((x) => x.user_id === uid && x.week_start === w)?.score ?? null,
     }))
-  const cols: {
+  const allCols: {
     key: keyof Pick<ComplianceScoreRow, 'plan' | 'report' | 'tasks' | 'off_plan'>
     label: string
   }[] = [
@@ -699,6 +758,8 @@ export function ComplianceBlock({
     { key: 'tasks', label: t.compliance.tasks },
     { key: 'off_plan', label: t.compliance.offPlan },
   ]
+  // Kế hoạch/Báo cáo ngày tạm ẩn → điểm chỉ còn Việc đúng hạn
+  const cols = daily ? allCols : allCols.filter((c) => c.key === 'tasks')
   const bandCount = (b: 'good' | 'warn' | 'bad') =>
     rows.filter((r) => scoreBand(r.score, bands) === b).length
 
@@ -709,7 +770,7 @@ export function ComplianceBlock({
       delay={360}
       icon={Gauge}
       title={`${t.compliance.title} · ${label}`}
-      subtitle={t.compliance.hint(weights)}
+      subtitle={daily ? t.compliance.hint(weights) : t.compliance.hintTasksOnly}
       actions={
         <CsvButton
           filename={`quan-ly-tuan-thu-${from}_${to}`}

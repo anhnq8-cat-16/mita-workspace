@@ -46,3 +46,4 @@ Ghi chú để phiên làm việc sau tiếp tục đúng chỗ. Code M0–M6 đ
 6. Nghiệm thu theo `docs/van-hanh.md`.
 7. (Tùy chọn, sau này) Đổi sang `work.mitaexport.com`: Cloudflare Pages + 1 bản ghi CNAME `work` ở **Nhân Hòa** (không đụng MX), rồi cập nhật lại Site URL, Redirect URL, `APP_ORIGIN`, Google OAuth origin.
 8. **26/09:** Slide hướng dẫn sử dụng (Nhân viên + Quản lý, 27 trang, có ảnh chú thích) – artifact https://claude.ai/artifact/2mnjiHs5yLGW6BD7eNRA9U. Tối ưu giao diện điện thoại (commit `4582fe3`) – **cần cập nhật `main`** để lên web.
+9. **28/09:** Tạm ẩn *Kế hoạch hôm nay* + *Báo cáo cuối ngày* theo yêu cầu (migration `20261003000100_daily_toggle.sql`, công tắc `daily_enabled` mặc định `false`). Cần **cập nhật `main`** + chạy workflow **Cài đặt / cập nhật Supabase**. Slide hướng dẫn còn nói về 09:00/17:30 → sửa sau khi chốt cách làm mới.

@@ -25,6 +25,8 @@ Không thể khóa hoặc hạ quyền quản trị viên cuối cùng.
 Mọi thay đổi được ghi vào nhật ký (audit_log).
 
 ## Kỷ luật ngày (M1) – cách hoạt động
+> **Tạm ẩn (từ 28/09/2026):** `daily_enabled = false` trong **Cài đặt → Thông số**. Khi tắt: không có trang *Hôm nay*, không bị cổng kế hoạch chặn (mở app vào thẳng tab chính đầu tiên), không email nhắc/tóm tắt kế hoạch–báo cáo, không gán *Bỏ lỡ*, không leo thang; điểm tuân thủ chỉ tính *Việc đúng hạn*; dashboard bỏ các ô Kế hoạch/Báo cáo; mục *Báo cáo* đổi thành **Nghỉ phép** (khai báo + duyệt nghỉ). Dữ liệu cũ giữ nguyên. Bật lại: sửa thành `true` → Lưu, mọi thứ bên dưới chạy như cũ từ lần mở app/lượt chạy lịch tiếp theo.
+
 - **Kế hoạch ngày:** lead/staff mở app vào ngày làm việc mà chưa nộp kế hoạch sẽ thấy màn hình *Kế hoạch hôm nay* và không vào được màn khác (chỉ đăng xuất hoặc khai báo nghỉ). Nộp sau `plan_deadline` (09:00) bị ghi **Trễ** và trưởng nhóm nhận thông báo.
 - Trước hạn chót được bỏ/sửa việc; sau hạn chót chỉ **thêm**, việc thêm bị gắn **Ngoài kế hoạch**.
 - **Báo cáo cuối ngày:** mở từ `report_open_time` (16:00). Nộp trước `report_deadline` (17:30) là Đúng giờ, sau đó là Trễ; đến `report_missed_at` (23:59) chưa nộp → **Bỏ lỡ**. Đã nộp thì khóa, chỉ thêm *Bổ sung*.

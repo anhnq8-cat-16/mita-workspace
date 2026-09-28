@@ -21,6 +21,8 @@ export interface NavItem {
 export interface NavUser {
   role: Role
   teams: string[]
+  /** Kế hoạch/Báo cáo ngày đang bật (settings.daily_enabled); mặc định bật */
+  daily?: boolean
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -43,6 +45,8 @@ const inSales = (u: NavUser) => u.teams.includes('sales_domestic')
 /** Người dùng có được vào mục này không (chỉ là lớp giao diện – RLS mới là lớp bảo vệ chính) */
 export function canAccess(key: NavKey, user: NavUser): boolean {
   switch (key) {
+    case 'today':
+      return user.daily !== false
     case 'sales':
       // Marketing vào để tạo lead và theo dõi trạng thái lead mình gửi
       return inSales(user) || user.teams.includes('marketing') || isManagerOrAdmin(user)
@@ -63,6 +67,9 @@ export function visibleNav(user: NavUser): NavItem[] {
   return NAV_ITEMS.filter((item) => canAccess(item.key, user))
 }
 
+/** Tab bù khi một tab chính bị ẩn (vd tạm ẩn "Hôm nay") */
+const FILL_TABS: NavKey[] = ['goals', 'library', 'products', 'reports']
+
 /**
  * Tối đa 4 tab chính ở thanh dưới trên mobile (tab thứ 5 là "Thêm").
  * Sale thấy Khách + Check-in; Marketing thấy Việc + Thư viện; quản lý thấy Quản lý.
@@ -79,9 +86,15 @@ export function bottomTabs(user: NavUser): NavItem[] {
     order = ['today', 'tasks', 'library', 'products']
   }
   const visible = visibleNav(user)
-  return order
+  return [...new Set([...order, ...FILL_TABS])]
     .map((key) => visible.find((i) => i.key === key))
     .filter((i): i is NavItem => Boolean(i))
+    .slice(0, 4)
+}
+
+/** Trang mở đầu: "Hôm nay", hoặc tab chính đầu tiên khi "Hôm nay" đang ẩn */
+export function homePath(user: NavUser): string {
+  return bottomTabs(user)[0]?.path ?? '/viec'
 }
 
 /** Tìm mục điều hướng theo đường dẫn (khớp tiền tố dài nhất) */
