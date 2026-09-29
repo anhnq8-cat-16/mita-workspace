@@ -342,7 +342,7 @@ function CustomerDetail({ customer }: { customer: CustomerRow }) {
           )}
         </div>
         {orderOpen && (
-          <div className="rounded-lg border border-border p-3">
+          <div className="rounded-xl border border-border p-3">
             <OrderForm
               order={orderOpen === 'new' ? undefined : orderOpen}
               customers={[customer]}
@@ -514,7 +514,7 @@ export function CustomersView({ onOpen }: { onOpen: (id: string) => void }) {
                 id: c.id,
                 lat: c.lat!,
                 lng: c.lng!,
-                color: c.status === 'active' ? '#7a4520' : '#9ca3af',
+                color: c.status === 'active' ? '#4f46e5' : '#9ca3af',
                 popup: (
                   <button
                     type="button"

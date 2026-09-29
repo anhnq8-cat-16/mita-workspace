@@ -44,7 +44,7 @@ export function MapView({ points, className }: { points: MapPoint[]; className?:
             pathOptions={{
               color: '#fff',
               weight: 2,
-              fillColor: p.color ?? '#7a4520',
+              fillColor: p.color ?? '#4f46e5',
               fillOpacity: 0.9,
             }}
           >

@@ -259,7 +259,7 @@ export function LibraryPage() {
 
   return (
     <div className="grid gap-4">
-      <h1 className="text-xl font-semibold">{t.title}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t.title}</h1>
       <Tabs
         value={tab}
         onChange={(v) => setParams(v === 'browse' ? {} : { tab: v }, { replace: true })}

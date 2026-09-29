@@ -6,7 +6,7 @@ import type { NavKey } from '@/lib/nav'
 export function ComingSoon({ navKey, milestone }: { navKey: NavKey; milestone: string }) {
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">{vi.nav[navKey]}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{vi.nav[navKey]}</h1>
       <Card>
         <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
           <Hammer className="size-8 text-muted-foreground" />

@@ -14,7 +14,7 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">{vi.settings.title}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{vi.settings.title}</h1>
       <Tabs
         value={tab}
         onChange={(next) => setParams(next === 'users' ? {} : { tab: next }, { replace: true })}

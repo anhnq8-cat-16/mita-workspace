@@ -84,7 +84,7 @@ export function TasksPage() {
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">{t.title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t.title}</h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCreateOpen('self')}>
             <Plus /> {t.newTask}
@@ -229,7 +229,7 @@ export function TasksPage() {
       </div>
 
       {flash && (
-        <div role="alert" className="rounded-lg border border-warning bg-warning/15 p-3 text-sm">
+        <div role="alert" className="rounded-xl border border-warning bg-warning/15 p-3 text-sm">
           {flash}
         </div>
       )}

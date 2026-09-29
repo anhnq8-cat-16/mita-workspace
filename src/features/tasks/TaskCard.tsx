@@ -91,7 +91,7 @@ export function TaskCard({
       onKeyDown={(e) => e.key === 'Enter' && onOpen?.()}
       style={{ borderLeftColor: teamColor(task.team_id) }}
       className={cn(
-        'grid min-w-0 gap-2 rounded-lg border border-l-4 bg-card p-3 text-left shadow-sm transition-shadow hover:shadow-md [&>*]:min-w-0',
+        'grid min-w-0 gap-2 rounded-xl border border-l-4 bg-card p-3 text-left shadow-sm transition-shadow hover:shadow-md [&>*]:min-w-0',
         late ? 'border-y-2 border-r-2 border-y-destructive border-r-destructive' : 'border-border',
         dragging && 'rotate-1 shadow-lg ring-2 ring-primary/40',
       )}

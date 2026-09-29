@@ -37,7 +37,7 @@ function PlanGatePage({ day }: { day: DayDetail }) {
       </header>
       <main className="mx-auto grid w-full max-w-2xl gap-4 p-4 pb-12">
         <div>
-          <h1 className="text-xl font-semibold">{t.gateTitle}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t.gateTitle}</h1>
           <p className="text-sm text-muted-foreground">
             {weekdayVN(day.now)}, {formatDateVN(day.date)} · {t.gateSubtitle}
           </p>

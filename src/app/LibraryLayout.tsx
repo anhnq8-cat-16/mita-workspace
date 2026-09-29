@@ -22,7 +22,7 @@ export function LibraryLayout() {
           {vi.appName}
         </Link>
       </header>
-      <main className="mx-auto w-full max-w-6xl p-4">
+      <main className="mx-auto w-full max-w-6xl p-4 sm:px-6 md:pt-8 lg:px-8">
         <Suspense
           fallback={
             <div className="flex justify-center p-10">

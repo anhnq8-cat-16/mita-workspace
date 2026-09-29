@@ -82,7 +82,7 @@ export const routes: RouteObject[] = [
           { path: 'bao-cao/:userId/:date', element: <DayDetailPage /> },
           {
             path: 'quan-ly',
-            handle: { theme: 'premium', wide: true },
+            handle: { wide: true },
             element: (
               <RequireNav navKey="dashboard">
                 <DashboardPage />

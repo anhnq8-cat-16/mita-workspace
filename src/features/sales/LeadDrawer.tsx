@@ -135,7 +135,7 @@ function WonForm({ lead, onDone }: { lead: LeadRow; onDone: () => void }) {
   const [items, setItems] = useState('')
 
   return (
-    <div className="grid gap-3 rounded-lg border border-success/40 bg-success/5 p-3">
+    <div className="grid gap-3 rounded-xl border border-success/40 bg-success/5 p-3">
       <p className="font-medium">{t.wonTitle}</p>
       <p className="text-xs text-muted-foreground">{t.wonHint}</p>
       <div className="flex gap-2">
@@ -294,7 +294,7 @@ function InfoForm({ lead, canWrite }: { lead: LeadRow; canWrite: boolean }) {
             {form.phone && (
               <a
                 href={`tel:${form.phone.replace(/\s/g, '')}`}
-                className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-border"
+                className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border"
                 aria-label={vi.activities.call}
               >
                 <Phone className="size-4" />

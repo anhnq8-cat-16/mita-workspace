@@ -120,7 +120,7 @@ function ReportForm({ day, autofill }: { day: DayDetail; autofill: AutofillValue
       </ul>
 
       {groups.map(({ team, fields }) => (
-        <fieldset key={team} className="grid gap-3 rounded-lg border border-border p-3">
+        <fieldset key={team} className="grid gap-3 rounded-xl border border-border p-3">
           <legend className="px-1 text-sm font-medium">
             {t.metrics} · {vi.teams[team] ?? team}
           </legend>
@@ -294,7 +294,7 @@ export function ReportContent({ day, report }: { day: DayDetail; report: DayRepo
         ) : null,
       )}
       {report.reviewed_at && (
-        <div className="rounded-lg border border-success/30 bg-success/5 p-3">
+        <div className="rounded-xl border border-success/30 bg-success/5 p-3">
           <p className="font-medium text-success">{t.reviewed}</p>
           {report.review_comment && <p>{report.review_comment}</p>}
         </div>

@@ -286,7 +286,7 @@ export function ReportsPage() {
   if (daily === false) {
     return (
       <div className="mx-auto grid max-w-3xl gap-4">
-        <h1 className="text-xl font-semibold">{vi.nav.leaves}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{vi.nav.leaves}</h1>
         {canTeam && <PendingLeaves />}
         <LeavesTab />
       </div>
@@ -301,7 +301,7 @@ export function ReportsPage() {
 
   return (
     <div className="mx-auto grid max-w-3xl gap-4">
-      <h1 className="text-xl font-semibold">{t.title}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t.title}</h1>
       <Tabs
         value={tab}
         onChange={(next) => setParams(next === 'mine' ? {} : { tab: next }, { replace: true })}

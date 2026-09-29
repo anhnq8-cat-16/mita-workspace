@@ -127,7 +127,7 @@ function MilestoneItem({
   const owner = nameOf(m.owner_id)
   const Icon = m.done_at ? CheckCircle2 : Circle
   return (
-    <li className="grid gap-2 rounded-lg border border-border bg-card p-3">
+    <li className="grid gap-2 rounded-xl border border-border bg-card p-3">
       <div className="flex items-start gap-2">
         <button
           type="button"

@@ -219,7 +219,7 @@ function DetailsForm({ task }: { task: TaskRow }) {
             onChange={(e) => set('description', e.target.value)}
           />
         ) : form.description ? (
-          <div className="rounded-lg border border-border p-3 text-sm [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5">
+          <div className="rounded-xl border border-border p-3 text-sm [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5">
             <Markdown>{form.description}</Markdown>
           </div>
         ) : (

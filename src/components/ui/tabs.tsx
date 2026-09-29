@@ -14,7 +14,10 @@ export function Tabs<T extends string>({
   return (
     <div
       role="tablist"
-      className={cn('inline-flex max-w-full overflow-x-auto rounded-lg bg-muted p-1', className)}
+      className={cn(
+        'inline-flex max-w-full overflow-x-auto rounded-xl bg-slate-100 p-1',
+        className,
+      )}
     >
       {items.map((item) => (
         <button
@@ -24,8 +27,8 @@ export function Tabs<T extends string>({
           aria-selected={value === item.value}
           onClick={() => onChange(item.value)}
           className={cn(
-            'min-h-9 shrink-0 rounded-md px-3 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors',
-            value === item.value && 'bg-background text-foreground shadow-sm',
+            'min-h-9 shrink-0 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap text-slate-500 transition-all duration-200 hover:text-slate-900',
+            value === item.value && 'bg-white text-slate-900 shadow-sm',
           )}
         >
           {item.label}

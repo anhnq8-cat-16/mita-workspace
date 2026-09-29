@@ -288,7 +288,7 @@ export function ProductsPage() {
   return (
     <div className="mx-auto grid max-w-4xl gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">{t.title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t.title}</h1>
         <div className="flex flex-wrap gap-2">
           <Link to="/san-pham/in">
             <Button variant="outline">
@@ -308,7 +308,7 @@ export function ProductsPage() {
         </div>
       </div>
       {edits && (
-        <div className="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-card p-3 shadow-sm">
+        <div className="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-primary/30 bg-card p-3 shadow-sm">
           <span className="flex-1 text-sm">{t.editPrices}</span>
           <Button variant="ghost" onClick={() => setEdits(null)}>
             {t.cancelEdit}

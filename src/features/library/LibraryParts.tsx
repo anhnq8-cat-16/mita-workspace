@@ -186,7 +186,7 @@ function EditMeta({
   const [channels, setChannels] = useState(item.channels)
   const [tags, setTags] = useState(item.tags.join(', '))
   return (
-    <div className="grid gap-3 rounded-lg border border-border p-3">
+    <div className="grid gap-3 rounded-xl border border-border p-3">
       <div className="grid gap-1.5">
         <Label htmlFor="edit-title">{t.titleField}</Label>
         <Input id="edit-title" value={title} onChange={(e) => setTitle(e.target.value)} />

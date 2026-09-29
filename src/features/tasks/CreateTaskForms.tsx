@@ -235,7 +235,7 @@ export function BulkAssignForm({
 
       <div className="grid gap-2">
         {rows.map((r, i) => (
-          <div key={r.key} className="grid gap-2 rounded-lg border border-border p-2">
+          <div key={r.key} className="grid gap-2 rounded-xl border border-border p-2">
             <div className="flex gap-2">
               <Input
                 value={r.title}

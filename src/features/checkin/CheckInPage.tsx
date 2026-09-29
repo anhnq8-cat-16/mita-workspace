@@ -430,7 +430,7 @@ function MineTab() {
   )
 }
 
-const COLORS = ['#7a4520', '#2563eb', '#16a34a', '#dc2626', '#9333ea', '#ea580c', '#0891b2']
+const COLORS = ['#4f46e5', '#db2777', '#16a34a', '#dc2626', '#9333ea', '#ea580c', '#0891b2']
 
 /** Quản lý / trưởng nhóm: bản đồ + dòng thời gian check-in theo người/ngày, so với lịch trình dự kiến */
 export function TeamCheckIns({ date: initialDate }: { date?: string }) {
@@ -525,7 +525,7 @@ export function CheckInPage() {
 
   return (
     <div className="mx-auto grid max-w-2xl gap-4">
-      <h1 className="text-xl font-semibold">{t.title}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t.title}</h1>
       {canTeam && canCheckIn && (
         <Tabs
           value={tab}

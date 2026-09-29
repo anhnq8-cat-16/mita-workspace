@@ -20,7 +20,7 @@ export function PendingPage() {
           <span className="flex size-14 items-center justify-center rounded-full bg-warning/20 text-warning-foreground">
             <Icon className="size-7" />
           </span>
-          <h1 className="text-xl font-semibold">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {locked ? vi.auth.lockedTitle : vi.auth.pendingTitle}
           </h1>
           <p className="text-sm text-muted-foreground">

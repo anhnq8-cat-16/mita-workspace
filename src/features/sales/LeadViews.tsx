@@ -55,7 +55,7 @@ function LeadCard({
       onClick={onOpen}
       onKeyDown={(e) => e.key === 'Enter' && onOpen?.()}
       className={cn(
-        'grid gap-1.5 rounded-lg border bg-card p-3 text-left text-sm shadow-sm',
+        'grid gap-1.5 rounded-xl border bg-card p-3 text-left text-sm shadow-sm',
         overdue ? 'border-2 border-destructive' : 'border-border',
         dragging && 'rotate-1 shadow-lg ring-2 ring-primary/40',
       )}
@@ -450,7 +450,7 @@ export function ErrorFlash({ message, onClose }: { message: string | null; onClo
   return (
     <div
       role="alert"
-      className="flex items-center gap-2 rounded-lg border border-warning bg-warning/15 p-3 text-sm"
+      className="flex items-center gap-2 rounded-xl border border-warning bg-warning/15 p-3 text-sm"
     >
       <span className="flex-1">{message}</span>
       <Button size="sm" variant="ghost" onClick={onClose}>

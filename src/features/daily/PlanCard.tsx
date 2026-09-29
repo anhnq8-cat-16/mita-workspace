@@ -58,7 +58,7 @@ export function PlanMetaBlock({ plan }: { plan: DayPlan }) {
       )}
       {plan.note && <p className="text-sm text-muted-foreground">{plan.note}</p>}
       {plan.reviewed_at && (
-        <div className="rounded-lg border border-success/30 bg-success/5 p-3 text-sm">
+        <div className="rounded-xl border border-success/30 bg-success/5 p-3 text-sm">
           <p className="font-medium text-success">{t.reviewed}</p>
           {plan.review_comment && <p>{plan.review_comment}</p>}
         </div>

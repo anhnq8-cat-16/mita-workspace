@@ -20,7 +20,9 @@ export function HomePage() {
   return (
     <div className="mx-auto grid max-w-2xl gap-4">
       <div>
-        <h1 className="text-xl font-semibold">{vi.home.greeting(firstName)}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          {vi.home.greeting(firstName)}
+        </h1>
         <p className="text-sm text-muted-foreground">
           {vi.home.todayIs(weekdayVN(new Date()), formatDateVN(new Date()))}
         </p>

@@ -65,7 +65,7 @@ export function SalesPage() {
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">{t.title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t.title}</h1>
         {canCreate && (
           <Button onClick={() => setCreating(true)}>
             <Plus /> {t.newLead}

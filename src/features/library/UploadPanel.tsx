@@ -206,7 +206,7 @@ export function UploadPanel({ products }: { products: ProductRow[] }) {
               {rows.map((r) => {
                 const pct = Math.round((r.loaded / r.file.size) * 100)
                 return (
-                  <li key={r.key} className="grid gap-2 rounded-lg border border-border p-2">
+                  <li key={r.key} className="grid gap-2 rounded-xl border border-border p-2">
                     <div className="flex items-center gap-2">
                       <Input
                         value={r.title}

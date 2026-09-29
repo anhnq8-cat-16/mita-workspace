@@ -406,7 +406,9 @@ export function GoalsPage() {
   const tab: PageTab = params.get('tab') === 'campaigns' ? 'campaigns' : 'goals'
   return (
     <div className="mx-auto grid max-w-3xl gap-4">
-      <h1 className="text-xl font-semibold">{vi.campaigns.pageTitle}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        {vi.campaigns.pageTitle}
+      </h1>
       <Tabs<PageTab>
         value={tab}
         onChange={(v) => setParams(v === 'goals' ? {} : { tab: v }, { replace: true })}

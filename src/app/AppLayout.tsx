@@ -36,8 +36,8 @@ function SideLink({
       onClick={onClick}
       className={({ isActive }) =>
         cn(
-          'flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-muted',
-          isActive && 'bg-primary/10 text-primary',
+          'flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+          isActive && 'bg-secondary text-primary hover:bg-secondary hover:text-primary',
         )
       }
     >
@@ -64,9 +64,8 @@ function UserBox() {
   )
 }
 
-/** Route có thể khai báo `handle: { theme: 'premium', wide: true }` (vd /quan-ly) */
+/** Route có thể khai báo `handle: { wide: true }` (vd /quan-ly) */
 interface RouteHandle {
-  theme?: 'premium'
   wide?: boolean
 }
 
@@ -97,12 +96,7 @@ export function AppLayout() {
         <UserBox />
       </aside>
 
-      <div
-        className={cn(
-          'flex min-w-0 flex-1 flex-col',
-          handle.theme === 'premium' && 'theme-premium',
-        )}
-      >
+      <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-2 border-b border-border bg-background/95 px-4 backdrop-blur">
           <div className="flex items-center gap-2 md:hidden">
             <img src="/favicon.svg" alt="" className="size-7" />
@@ -114,8 +108,8 @@ export function AppLayout() {
 
         <main
           className={cn(
-            'mx-auto w-full flex-1 p-4 pb-24 md:pb-8',
-            handle.wide ? 'max-w-[1400px] sm:px-6 md:pt-8 lg:px-8' : 'max-w-6xl',
+            'mx-auto w-full flex-1 p-4 pb-24 sm:px-6 md:pt-8 md:pb-8 lg:px-8',
+            handle.wide ? 'max-w-[1400px]' : 'max-w-6xl',
           )}
         >
           <Suspense

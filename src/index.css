@@ -1,21 +1,22 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-background: #fbf8f5;
-  --color-foreground: #2a1d14;
+  /* Một bộ màu cho toàn app (trước chỉ trang /quan-ly): nền slate rất nhạt, chữ slate-900, nhấn indigo */
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
   --color-card: #ffffff;
-  --color-muted: #f1ebe5;
-  --color-muted-foreground: #74655a;
-  --color-border: #e4dbd2;
-  --color-ring: #9a5b2c;
-  --color-primary: #7a4520;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-border: #e2e8f0;
+  --color-ring: #6366f1;
+  --color-primary: #4f46e5;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #efe4d8;
-  --color-secondary-foreground: #4a2f1c;
-  --color-destructive: #c2362b;
-  --color-success: #2e7d4f;
+  --color-secondary: #eef2ff;
+  --color-secondary-foreground: #3730a3;
+  --color-destructive: #e11d48;
+  --color-success: #059669;
   --color-warning: #e0a526;
-  --color-warning-foreground: #6b4a00;
+  --color-warning-foreground: #92400e;
   --font-sans:
     'Be Vietnam Pro', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
@@ -39,30 +40,6 @@ body {
 /* Chừa chỗ cho thanh tab dưới trên iPhone có "tai thỏ" */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
-}
-
-/*
- * Giao diện "premium" (dashboard /quan-ly): nền slate rất nhạt, chữ slate-900, nhấn indigo.
- * Chỉ đổi biến màu trong phạm vi class, các component dùng chung tự nhận màu mới.
- */
-.theme-premium {
-  --color-background: #f8fafc;
-  --color-foreground: #0f172a;
-  --color-card: #ffffff;
-  --color-muted: #f1f5f9;
-  --color-muted-foreground: #64748b;
-  --color-border: #e2e8f0;
-  --color-ring: #6366f1;
-  --color-primary: #4f46e5;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #eef2ff;
-  --color-secondary-foreground: #3730a3;
-  --color-destructive: #e11d48;
-  --color-success: #059669;
-  --color-warning: #e0a526;
-  --color-warning-foreground: #92400e;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
 }
 
 @keyframes bar-grow {

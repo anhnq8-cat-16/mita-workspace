@@ -36,7 +36,7 @@ export function Sheet({
       <button
         type="button"
         aria-label={vi.common.close}
-        className="absolute inset-0 hidden bg-black/40 md:block"
+        className="absolute inset-0 hidden bg-slate-900/40 backdrop-blur-[2px] md:block"
         onClick={onClose}
       />
       <div

@@ -66,7 +66,7 @@ export function MentionTextarea({
         onBlur={() => setTimeout(() => setQuery(null), 150)}
       />
       {matches.length > 0 && (
-        <ul className="absolute bottom-full left-0 z-10 mb-1 w-64 overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+        <ul className="absolute bottom-full left-0 z-10 mb-1 w-64 overflow-hidden rounded-xl border border-border bg-card shadow-lg">
           {matches.map((p) => (
             <li key={p.id}>
               <button

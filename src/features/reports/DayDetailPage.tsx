@@ -75,7 +75,9 @@ export function DayDetailPage() {
         <ArrowLeft className="size-4" /> {t.back}
       </Link>
       <div>
-        <h1 className="text-xl font-semibold">{person?.full_name ?? person?.email ?? ''}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          {person?.full_name ?? person?.email ?? ''}
+        </h1>
         {date && (
           <p className="text-sm text-muted-foreground">
             {weekdayVN(`${date}T05:00:00Z`)}, {formatDateVN(date)}

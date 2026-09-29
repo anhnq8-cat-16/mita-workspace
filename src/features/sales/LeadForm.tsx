@@ -13,7 +13,7 @@ const t = vi.sales
 
 export function DuplicateList({ items }: { items: LeadDuplicateRow[] }) {
   return (
-    <div className="grid gap-2 rounded-lg border border-warning bg-warning/10 p-3 text-sm">
+    <div className="grid gap-2 rounded-xl border border-warning bg-warning/10 p-3 text-sm">
       <p className="flex items-center gap-2 font-medium">
         <AlertTriangle className="size-4" /> {t.duplicatesTitle}
       </p>
